@@ -11,7 +11,7 @@ if (location.href.substr(0, 5) !== 'https') location.href = 'https' + location.h
  * @license For commercial or closed source, contact us at license.mirotalk@gmail.com or purchase directly via CodeCanyon
  * @license CodeCanyon: https://codecanyon.net/item/mirotalk-sfu-webrtc-realtime-video-conferences/40769970
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.5.41
+ * @version 1.5.64
  *
  */
 
@@ -252,6 +252,8 @@ let transcription;
 
 let showFreeAvatars = true;
 
+let quill = null;
+
 // ####################################################
 // INIT ROOM
 // ####################################################
@@ -338,6 +340,15 @@ function initClient() {
         setTippy('pollMinButton', 'Minimize', 'bottom');
         setTippy('pollSaveButton', 'Save results', 'bottom');
         setTippy('pollCloseBtn', 'Close', 'bottom');
+        setTippy('editorLockBtn', 'Toggle Lock editor', 'bottom');
+        setTippy('editorUnlockBtn', 'Toggle Lock editor', 'bottom');
+        setTippy('editorTogglePin', 'Toggle pin', 'bottom');
+        setTippy('editorUndoBtn', 'Undo', 'bottom');
+        setTippy('editorRedoBtn', 'Redo', 'bottom');
+        setTippy('editorCopyBtn', 'Copy', 'bottom');
+        setTippy('editorSaveBtn', 'Save', 'bottom');
+        setTippy('editorCloseBtn', 'Close', 'bottom');
+        setTippy('editorCleanBtn', 'Clean', 'bottom');
         setTippy('pollAddOptionBtn', 'Add option', 'top');
         setTippy('pollDelOptionBtn', 'Delete option', 'top');
         setTippy('participantsSaveBtn', 'Save participants info', 'bottom');
@@ -375,8 +386,10 @@ function refreshMainButtonsToolTipPlacement() {
         setTippy('emojiRoomButton', 'Toggle emoji reaction', placement);
         setTippy('chatButton', 'Toggle the chat', placement);
         setTippy('pollButton', 'Toggle the poll', placement);
+        setTippy('editorButton', 'Toggle the editor', placement);
         setTippy('transcriptionButton', 'Toggle transcription', placement);
         setTippy('whiteboardButton', 'Toggle the whiteboard', placement);
+        setTippy('snapshotRoomButton', 'Snapshot screen, window, or tab', placement);
         setTippy('settingsButton', 'Toggle the settings', placement);
         setTippy('aboutButton', 'About this project', placement);
 
@@ -1184,7 +1197,7 @@ function copyRoomURL() {
     userLog('info', 'Meeting URL copied to clipboard 👍', 'top-end');
 }
 
-function copyToClipboard(txt) {
+function copyToClipboard(txt, showTxt = true) {
     let tmpInput = document.createElement('input');
     document.body.appendChild(tmpInput);
     tmpInput.value = txt;
@@ -1192,7 +1205,9 @@ function copyToClipboard(txt) {
     tmpInput.setSelectionRange(0, 99999); // For mobile devices
     navigator.clipboard.writeText(tmpInput.value);
     document.body.removeChild(tmpInput);
-    userLog('info', `${txt} copied to clipboard 👍`, 'top-end');
+    showTxt
+        ? userLog('info', `${txt} copied to clipboard 👍`, 'top-end')
+        : userLog('info', `Copied to clipboard 👍`, 'top-end');
 }
 
 function shareRoomByEmail() {
@@ -1283,6 +1298,7 @@ function roomIsReady() {
     }
     BUTTONS.main.chatButton && show(chatButton);
     BUTTONS.main.pollButton && show(pollButton);
+    BUTTONS.main.editorButton && show(editorButton);
     BUTTONS.main.raiseHandButton && show(raiseHandButton);
     BUTTONS.main.emojiRoomButton && show(emojiRoomButton);
     !BUTTONS.chat.chatSaveButton && hide(chatSaveButton);
@@ -1316,6 +1332,7 @@ function roomIsReady() {
         hide(chatMinButton);
         rc.pollMaximize();
         hide(pollTogglePin);
+        hide(editorTogglePin);
         hide(pollMaxButton);
         hide(pollMinButton);
         transcription.maximize();
@@ -1326,6 +1343,7 @@ function roomIsReady() {
         rc.makeDraggable(emojiPickerContainer, emojiPickerHeader);
         rc.makeDraggable(chatRoom, chatHeader);
         rc.makeDraggable(pollRoom, pollHeader);
+        //rc.makeDraggable(editorRoom, editorHeader);
         rc.makeDraggable(mySettings, mySettingsHeader);
         rc.makeDraggable(whiteboard, whiteboardHeader);
         rc.makeDraggable(sendFileDiv, imgShareSend);
@@ -1337,10 +1355,12 @@ function roomIsReady() {
                 show(startScreenButton);
                 show(ScreenFpsDiv);
             }
+            BUTTONS.main.snapshotRoomButton && show(snapshotRoomButton);
         }
         BUTTONS.chat.chatPinButton && show(chatTogglePin);
         BUTTONS.chat.chatMaxButton && show(chatMaxButton);
         BUTTONS.poll.pollPinButton && show(pollTogglePin);
+        show(editorTogglePin);
         BUTTONS.poll.pollMaxButton && show(pollMaxButton);
         BUTTONS.settings.pushToTalk && show(pushToTalkDiv);
         BUTTONS.settings.tabRTMPStreamingBtn &&
@@ -1373,6 +1393,7 @@ function roomIsReady() {
     handleInputs();
     handleChatEmojiPicker();
     handleRoomEmojiPicker();
+    handleEditor();
     loadSettingsFromLocalStorage();
     startSessionTimer();
     document.body.addEventListener('mousemove', (e) => {
@@ -1617,6 +1638,42 @@ function handleButtons() {
     pollCreateForm.onsubmit = (e) => {
         rc.pollCreateNewForm(e);
     };
+    editorButton.onclick = () => {
+        rc.toggleEditor();
+        if (isPresenter && !rc.editorIsLocked()) {
+            rc.editorSendAction('open');
+        }
+    };
+    editorCloseBtn.onclick = () => {
+        rc.toggleEditor();
+        if (isPresenter && !rc.editorIsLocked()) {
+            rc.editorSendAction('close');
+        }
+    };
+    editorTogglePin.onclick = () => {
+        rc.toggleEditorPin();
+    };
+    editorLockBtn.onclick = () => {
+        rc.toggleLockUnlockEditor();
+    };
+    editorUnlockBtn.onclick = () => {
+        rc.toggleLockUnlockEditor();
+    };
+    editorCleanBtn.onclick = () => {
+        rc.editorClean();
+    };
+    editorCopyBtn.onclick = () => {
+        rc.editorCopy();
+    };
+    editorSaveBtn.onclick = () => {
+        rc.editorSave();
+    };
+    editorUndoBtn.onclick = () => {
+        rc.editorUndo();
+    };
+    editorRedoBtn.onclick = () => {
+        rc.editorRedo();
+    };
     transcriptionButton.onclick = () => {
         transcription.toggle();
     };
@@ -1825,6 +1882,9 @@ function handleButtons() {
     };
     whiteboardButton.onclick = () => {
         toggleWhiteboard();
+    };
+    snapshotRoomButton.onclick = () => {
+        rc.snapshotRoom();
     };
     whiteboardPencilBtn.onclick = () => {
         whiteboardIsDrawingMode(true);
@@ -2142,8 +2202,12 @@ async function toggleScreenSharing() {
     }
     joinRoomWithScreen = !joinRoomWithScreen;
     if (joinRoomWithScreen) {
+        const defaultFrameRate = { ideal: 30 };
+        const selectedValue = getId('videoFps').options[localStorageSettings.screen_fps].value;
+        const customFrameRate = parseInt(selectedValue, 10);
+        const frameRate = selectedValue == 'max' ? defaultFrameRate : customFrameRate;
         await navigator.mediaDevices
-            .getDisplayMedia({ audio: true, video: true })
+            .getDisplayMedia({ audio: true, video: { frameRate: frameRate } })
             .then((screenStream) => {
                 if (initVideo.classList.contains('mirror')) {
                     initVideo.classList.toggle('mirror');
@@ -2656,6 +2720,51 @@ function handleRoomEmojiPicker() {
             setColor(emojiRoomButton, 'yellow');
         }
     }
+}
+
+// ####################################################
+// ROOM EDITOR
+// ####################################################
+
+function handleEditor() {
+    const toolbarOptions = [
+        [{ header: [1, 2, 3, false] }, { align: [] }, { background: [] }],
+        ['bold', 'italic', 'underline', 'strike', 'link', 'image', 'code-block'],
+        [{ list: 'ordered' }, { list: 'bullet' }, { list: 'check' }],
+        [{ indent: '+1' }, { indent: '-1' }],
+        ['clean'], // Custom button to clear formatting
+        //...
+    ];
+
+    quill = new Quill('#editor', {
+        modules: {
+            toolbar: {
+                container: toolbarOptions,
+            },
+            syntax: true,
+        },
+        theme: 'snow',
+    });
+
+    applySyntaxHighlighting();
+
+    quill.on('text-change', (delta, oldDelta, source) => {
+        if (!isPresenter && rc.editorIsLocked()) {
+            return;
+        }
+        // console.log('text-change', { delta, oldDelta, source });
+        applySyntaxHighlighting();
+        if (rc.thereAreParticipants() && source === 'user') {
+            socket.emit('editorChange', delta);
+        }
+    });
+}
+
+function applySyntaxHighlighting() {
+    const codeBlocks = document.querySelectorAll('.ql-syntax');
+    codeBlocks.forEach((block) => {
+        hljs.highlightElement(block);
+    });
 }
 
 // ####################################################
@@ -3839,7 +3948,7 @@ function getParticipantsList(peers) {
 
         li += `<li><button class="ml5" id="muteAllParticipantsButton" onclick="rc.peerAction('me','${socket.id}','mute',true,true)">${_PEER.audioOff} Mute all participants</button></li>`;
         li += `<li><button class="ml5" id="hideAllParticipantsButton" onclick="rc.peerAction('me','${socket.id}','hide',true,true)">${_PEER.videoOff} Hide all participants</button></li>`;
-        li += `<li><button class="ml5" id="stopAllParticipantsButton" onclick="rc.peerAction('me','${socket.id}','stop',true,true)">${_PEER.screenOff} Stop all screen</button></li>`;
+        li += `<li><button class="ml5" id="stopAllParticipantsButton" onclick="rc.peerAction('me','${socket.id}','stop',true,true)">${_PEER.screenOff} Stop all screens sharing</button></li>`;
 
         if (BUTTONS.participantsList.sendFileAllButton) {
             li += `<li><button class="btn-sm ml5" id="sendAllButton" onclick="rc.selectFileToShare('${socket.id}', true)">${_PEER.sendFile} Share file to all</button></li>`;
@@ -4087,6 +4196,7 @@ function setCustomTheme() {
     document.documentElement.style.setProperty('--wb-bg', `radial-gradient(${color}, ${color})`);
     // document.documentElement.style.setProperty('--btns-bg-color', `${color}`);
     document.documentElement.style.setProperty('--btns-bg-color', 'rgba(0, 0, 0, 0.7)');
+    document.documentElement.style.setProperty('--dd-color', '#FFFFFF');
     document.body.style.background = `radial-gradient(${color}, ${color})`;
 }
 
@@ -4096,7 +4206,7 @@ function setTheme() {
     selectTheme.selectedIndex = localStorageSettings.theme;
     const theme = selectTheme.value;
     switch (theme) {
-        case 'elegant':
+        case 'default':
             swalBackground = 'linear-gradient(135deg, #000000, #434343)';
             document.documentElement.style.setProperty('--body-bg', 'linear-gradient(135deg, #000000, #434343)');
             document.documentElement.style.setProperty('--trx-bg', 'linear-gradient(135deg, #000000, #434343)');
@@ -4108,6 +4218,7 @@ function setTheme() {
             document.documentElement.style.setProperty('--settings-bg', 'linear-gradient(135deg, #000000, #434343)');
             document.documentElement.style.setProperty('--wb-bg', 'linear-gradient(135deg, #000000, #434343)');
             document.documentElement.style.setProperty('--btns-bg-color', 'rgba(0, 0, 0, 0.7)');
+            document.documentElement.style.setProperty('--dd-color', '#FFFFFF');
             document.body.style.background = 'linear-gradient(135deg, #000000, #434343)';
             selectTheme.selectedIndex = 0;
             break;
@@ -4123,6 +4234,7 @@ function setTheme() {
             document.documentElement.style.setProperty('--settings-bg', 'linear-gradient(135deg, #000000, #1a1a1a)');
             document.documentElement.style.setProperty('--wb-bg', 'linear-gradient(135deg, #000000, #1a1a1a)');
             document.documentElement.style.setProperty('--btns-bg-color', 'rgba(0, 0, 0, 0.85)');
+            document.documentElement.style.setProperty('--dd-color', '#FFFFFF');
             document.body.style.background = 'linear-gradient(135deg, #000000, #1a1a1a)';
             selectTheme.selectedIndex = 1;
             break;
@@ -4138,6 +4250,7 @@ function setTheme() {
             document.documentElement.style.setProperty('--settings-bg', 'linear-gradient(135deg, #1a1a1a, #4f4f4f)');
             document.documentElement.style.setProperty('--wb-bg', 'linear-gradient(135deg, #1a1a1a, #4f4f4f)');
             document.documentElement.style.setProperty('--btns-bg-color', 'rgba(0, 0, 0, 0.7)');
+            document.documentElement.style.setProperty('--dd-color', '#FFFFFF');
             document.body.style.background = 'linear-gradient(135deg, #1a1a1a, #4f4f4f)';
             selectTheme.selectedIndex = 2;
             break;
@@ -4153,6 +4266,7 @@ function setTheme() {
             document.documentElement.style.setProperty('--settings-bg', 'linear-gradient(135deg, #002a22, #004d40)');
             document.documentElement.style.setProperty('--wb-bg', 'linear-gradient(135deg, #002a22, #004d40)');
             document.documentElement.style.setProperty('--btns-bg-color', 'rgba(0, 42, 34, 0.7)');
+            document.documentElement.style.setProperty('--dd-color', '#00FF00');
             document.body.style.background = 'linear-gradient(135deg, #002a22, #004d40)';
             selectTheme.selectedIndex = 3;
             break;
@@ -4168,6 +4282,7 @@ function setTheme() {
             document.documentElement.style.setProperty('--settings-bg', 'linear-gradient(135deg, #00274d, #004d80)');
             document.documentElement.style.setProperty('--wb-bg', 'linear-gradient(135deg, #00274d, #004d80)');
             document.documentElement.style.setProperty('--btns-bg-color', 'rgba(0, 39, 77, 0.7)');
+            document.documentElement.style.setProperty('--dd-color', '#1E90FF');
             document.body.style.background = 'linear-gradient(135deg, #00274d, #004d80)';
             selectTheme.selectedIndex = 4;
             break;
@@ -4183,6 +4298,7 @@ function setTheme() {
             document.documentElement.style.setProperty('--settings-bg', 'linear-gradient(135deg, #2a0d0d, #4d1a1a)');
             document.documentElement.style.setProperty('--wb-bg', 'linear-gradient(135deg, #2a0d0d, #4d1a1a)');
             document.documentElement.style.setProperty('--btns-bg-color', 'rgba(42, 13, 13, 0.7)');
+            document.documentElement.style.setProperty('--dd-color', '#FF4500');
             document.body.style.background = 'linear-gradient(135deg, #2a0d0d, #4d1a1a)';
             selectTheme.selectedIndex = 5;
             break;
@@ -4198,6 +4314,7 @@ function setTheme() {
             document.documentElement.style.setProperty('--settings-bg', 'linear-gradient(135deg, #2a001d, #4d004a)');
             document.documentElement.style.setProperty('--wb-bg', 'linear-gradient(135deg, #2a001d, #4d004a)');
             document.documentElement.style.setProperty('--btns-bg-color', 'rgba(42, 0, 29, 0.7)');
+            document.documentElement.style.setProperty('--dd-color', '#BF00FF');
             document.body.style.background = 'linear-gradient(135deg, #2a001d, #4d004a)';
             selectTheme.selectedIndex = 6;
             break;
@@ -4213,6 +4330,7 @@ function setTheme() {
             document.documentElement.style.setProperty('--settings-bg', 'linear-gradient(135deg, #3d1a00, #ff8c00)');
             document.documentElement.style.setProperty('--wb-bg', 'linear-gradient(135deg, #3d1a00, #ff8c00)');
             document.documentElement.style.setProperty('--btns-bg-color', 'rgba(61, 26, 0, 0.7)');
+            document.documentElement.style.setProperty('--dd-color', '#FFA500');
             document.body.style.background = 'linear-gradient(135deg, #3d1a00, #ff8c00)';
             selectTheme.selectedIndex = 7;
             break;
@@ -4228,6 +4346,7 @@ function setTheme() {
             document.documentElement.style.setProperty('--settings-bg', 'linear-gradient(135deg, #4d001d, #ff66b2)');
             document.documentElement.style.setProperty('--wb-bg', 'linear-gradient(135deg, #4d001d, #ff66b2)');
             document.documentElement.style.setProperty('--btns-bg-color', 'rgba(77, 0, 29, 0.7)');
+            document.documentElement.style.setProperty('--dd-color', '#FF1493');
             document.body.style.background = 'linear-gradient(135deg, #4d001d, #ff66b2)';
             selectTheme.selectedIndex = 8;
             break;
@@ -4243,6 +4362,7 @@ function setTheme() {
             document.documentElement.style.setProperty('--settings-bg', 'linear-gradient(135deg, #4d3b00, #ffc107)');
             document.documentElement.style.setProperty('--wb-bg', 'linear-gradient(135deg, #4d3b00, #ffc107)');
             document.documentElement.style.setProperty('--btns-bg-color', 'rgba(77, 59, 0, 0.7)');
+            document.documentElement.style.setProperty('--dd-color', '#FFD700');
             document.body.style.background = 'linear-gradient(135deg, #4d3b00, #ffc107)';
             selectTheme.selectedIndex = 9;
             break;
@@ -4335,7 +4455,7 @@ function showAbout() {
         imageUrl: image.about,
         customClass: { image: 'img-about' },
         position: 'center',
-        title: 'WebRTC SFU v1.5.41',
+        title: 'WebRTC SFU v1.5.64',
         html: `
         <br />
         <div id="about">

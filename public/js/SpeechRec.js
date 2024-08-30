@@ -30,9 +30,12 @@ const commands = {
     chatOff: 'close the chat',
     pollOn: 'open the poll',
     pollOff: 'close the poll',
+    editorOn: 'open the editor',
+    editorOff: 'close the editor',
     toggleTr: 'toggle transcription',
     whiteboardOn: 'open the whiteboard',
     whiteboardOff: 'close the whiteboard',
+    snapshotRoom: 'Snapshot room',
     recordingOn: 'start the recording',
     recordingPause: 'pause the recording',
     recordingResume: 'resume the recording',
@@ -196,6 +199,14 @@ function execVoiceCommands(transcript) {
             printCommand(commands.pollOff);
             pollCloseBtn.click();
             break;
+        case commands.editorOn:
+            printCommand(commands.editorOn);
+            editorButton.click();
+            break;
+        case commands.editorOff:
+            printCommand(commands.editorOff);
+            editorCloseBtn.click();
+            break;
         case commands.chatSend:
             printCommand(commands.chatSend);
             chatSendButton.click();
@@ -214,6 +225,10 @@ function execVoiceCommands(transcript) {
         case commands.whiteboardOff:
             printCommand(commands.whiteboardOff);
             whiteboardCloseBtn.click();
+            break;
+        case commands.snapshotRoom:
+            printCommand(commands.snapshotRoom);
+            snapshotRoomButton.click();
             break;
         case commands.recordingOn:
             printCommand(commands.recordingOn);

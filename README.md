@@ -2,6 +2,14 @@
 
 <br />
 
+<div align="center">
+
+<a href="">[![Author](https://img.shields.io/badge/Author-miroslav-brightgreen.svg)](https://www.linkedin.com/in/miroslav-pejic-976a07101/)</a>
+<a href="">![License: AGPLv3](https://img.shields.io/badge/License-AGPLv3-blue.svg)</a>
+<a href="">[![Community](https://img.shields.io/badge/Community-forum-pink.svg)](https://discord.gg/rgGYfeYW3N)</a>
+
+</div>
+
 <p align="center">Free WebRTC - SFU - Simple, Secure, Scalable Real-Time Video Conferences with support for up to 8k resolution and 60fps. It's compatible with all major browsers and platforms</p>
 
 <hr />
@@ -61,6 +69,7 @@
 -   Speech recognition, execute the app features simply with your voice.
 -   Push-to-talk functionality, similar to a walkie-talkie.
 -   Advanced collaborative whiteboard for teachers.
+-   Advanced collaborative powerful rich text editor.
 -   Real-time sharing of YouTube embed videos, video files (MP4, WebM, OGG), and audio files (MP3).
 -   Real-time polls, allows users to create and participate in live polls, providing instant feedback and results.
 -   Integrated RTMP server, fully compatible with **[OBS](https://obsproject.com)**.
@@ -151,7 +160,7 @@ To embed a meeting within `your service or app` using an iframe, you can use the
 
 ```html
 <iframe
-    allow="camera; microphone; display-capture; fullscreen; clipboard-read; clipboard-write; autoplay"
+    allow="camera; microphone; display-capture; fullscreen; clipboard-read; clipboard-write; web-share; autoplay"
     src="https://sfu.mirotalk.com/newroom"
     style="height: 100vh; width: 100vw; border: 0px;"
 ></iframe>

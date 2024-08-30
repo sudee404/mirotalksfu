@@ -43,6 +43,7 @@
         <link rel="stylesheet" href="../css/VideoGrid.css" />
         <link rel="stylesheet" href="../css/GroupChat.css" />
         <link rel="stylesheet" href="../css/Polls.css" />
+        <link rel="stylesheet" href="../css/Editor.css" />
 
         <!-- https://cdnjs.com/libraries/font-awesome -->
 
@@ -66,6 +67,17 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/monolith.min.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css" />
+
+        <!-- Highlight  https://github.com/highlightjs/highlight.js -->
+
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/atom-one-dark.min.css"
+        />
+
+        <!-- Quill  https://github.com/slab/quill -->
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" />
 
         <script defer src="../js/Brand.js"></script>
 
@@ -124,6 +136,8 @@
         <script defer src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
         <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
         <script defer src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+        <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
     </head>
     <body>
         <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -169,9 +183,11 @@ access to use this app.
             <button id="stopRecButton" class="hidden"><i class="fas fa-record-vinyl cr"></i></button>
             <button id="emojiRoomButton" class="hidden"><i class="fas fa-face-smile"></i></button>
             <button id="chatButton" class="hidden"><i class="fas fa-comments"></i></button>
-            <button id="pollButton" class="hidden"><i class="fas fa-square-poll-horizontal"></i></button>
             <button id="transcriptionButton" class="hidden"><i class="fas fa-closed-captioning"></i></button>
+            <button id="pollButton" class="hidden"><i class="fas fa-square-poll-horizontal"></i></button>
+            <button id="editorButton" class="hidden"><i class="fas fa-pen-to-square"></i></button>
             <button id="whiteboardButton" class="hidden"><i class="fas fa-chalkboard-teacher"></i></button>
+            <button id="snapshotRoomButton" class="hidden"><i class="fas fas fa-camera-retro"></i></button>
             <button id="settingsButton" class="hidden"><i class="fas fa-cogs"></i></button>
             <button id="aboutButton" class="hidden"><i class="fas fa-question"></i></button>
             <!-- <button id="restartICE" class="hidden"><i class="fas fa-satellite-dish"></i></button> -->
@@ -938,6 +954,7 @@ access to use this app.
                             <hr />
                             <div class="container-flex">
                                 <div id="avatarVideoAIcontainer"></div>
+                                <hr />
                                 <select id="avatarQuality" class="form-select text-light bg-dark">
                                     <option value="low">Avatar Quality - Low</option>
                                     <option value="medium" selected>Avatar Quality - Medium</option>
@@ -953,7 +970,6 @@ access to use this app.
                                 <div id="audio-container">
                                     <audio id="avatarPreviewAudio" controls></audio>
                                 </div>
-                                <hr />
                                 <button id="avatarVideoAIStart" class="btn-custom">
                                     <i class="fas fa-play"></i> Start Avatar Session
                                 </button>
@@ -1124,7 +1140,7 @@ access to use this app.
                         </div>
                         <br />
                         <select id="selectTheme" class="form-select text-light bg-dark">
-                            <option value="elegant">🔘 &nbsp;Elegant</option>
+                            <option value="default">🔘 &nbsp;Default</option>
                             <option value="dark">⚫ &nbsp;Dark</option>
                             <option value="grey">⚪ &nbsp;Grey</option>
                             <option value="green">🟢 &nbsp;Green</option>
@@ -1523,6 +1539,23 @@ access to use this app.
             <div class="polls">
                 <div id="pollsContainer" class="polls-container"></div>
             </div>
+        </section>
+
+        <section id="editorRoom" class="editor-container fadein hidden">
+            <div id="editorHeader" class="editor-header">
+                <div class="editor-header-btns">
+                    <button id="editorTogglePin" class="fas fa-map-pin hidden"></button>
+                    <button id="editorUnlockBtn" class="fa-solid fa-lock-open hidden"></button>
+                    <button id="editorLockBtn" class="fa-solid fa-lock hidden"></button>
+                    <button id="editorUndoBtn" class="fas fa-undo"></button>
+                    <button id="editorRedoBtn" class="fas fa-redo"></button>
+                    <button id="editorCopyBtn" class="fas fa-paste"></button>
+                    <button id="editorSaveBtn" class="fas fa-floppy-disk"></button>
+                    <button id="editorCleanBtn" class="fas fa-trash"></button>
+                    <button id="editorCloseBtn" class="fas fa-times"></button>
+                </div>
+            </div>
+            <div class="editor" id="editor"></div>
         </section>
 
         <section id="transcriptionRoom" class="transcription-room fadein">

@@ -9,7 +9,7 @@
  * @license For commercial or closed source, contact us at license.mirotalk@gmail.com or purchase directly via CodeCanyon
  * @license CodeCanyon: https://codecanyon.net/item/mirotalk-sfu-webrtc-realtime-video-conferences/40769970
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.5.41
+ * @version 1.5.64
  *
  */
 
@@ -68,6 +68,7 @@ const icons = {
     theme: '<i class="fas fa-fill-drip"></i>',
     recSync: '<i class="fa-solid fa-cloud-arrow-up"></i>',
     refresh: '<i class="fas fa-rotate"></i>',
+    editor: '<i class="fas fa-pen-to-square"></i>',
 };
 
 const image = {
@@ -102,6 +103,7 @@ const image = {
     geolocation: '../images/geolocation.png',
     network: '../images/network.gif',
     rtmp: '../images/rtmp.png',
+    save: '../images/save.png',
 };
 
 const mediaType = {
@@ -261,6 +263,9 @@ class RoomClient {
         this.isChatEmojiOpen = false;
         this.isPollOpen = false;
         this.isPollPinned = false;
+        this.isEditorOpen = false;
+        this.isEditorLocked = false;
+        this.isEditorPinned = false;
         this.isSpeechSynthesisSupported = isSpeechSynthesisSupported;
         this.speechInMessages = false;
         this.showChatOnMessage = true;
@@ -400,9 +405,7 @@ class RoomClient {
             .then(async (room) => {
                 console.log('##### JOIN ROOM #####', room);
                 if (room === 'invalid') {
-                    console.log(
-                        '00-WARNING ----> Room is Invalid! Must be a UUID4 or an ALPHANUMERIC string without special characters or spaces',
-                    );
+                    console.log('00-WARNING ----> Invalid Room name! Path traversal pattern detected!');
                     return this.roomInvalid();
                 }
                 if (room === 'notAllowed') {
@@ -907,6 +910,9 @@ class RoomClient {
         this.socket.on('endRTMPfromURL', this.handleEndRTMPfromURL);
         this.socket.on('errorRTMPfromURL', this.handleErrorRTMPfromURL);
         this.socket.on('updatePolls', this.handleUpdatePolls);
+        this.socket.on('editorChange', this.handleEditorChange);
+        this.socket.on('editorActions', this.handleEditorActions);
+        this.socket.on('editorUpdate', this.handleEditorUpdate);
     }
 
     // ####################################################
@@ -946,6 +952,7 @@ class RoomClient {
         if (isBroadcastingEnabled) {
             if (isParticipantsListOpen) getRoomParticipants();
             wbUpdate();
+            this.editorUpdate();
         } else {
             adaptAspectRatio(participantsCount);
         }
@@ -1079,6 +1086,18 @@ class RoomClient {
 
     handleUpdatePolls = (data) => {
         this.pollsUpdate(data);
+    };
+
+    handleEditorChange = (data) => {
+        this.handleEditorData(data);
+    };
+
+    handleEditorActions = (data) => {
+        this.handleEditorActionsData(data);
+    };
+
+    handleEditorUpdate = (data) => {
+        this.handleEditorUpdateData(data);
     };
 
     // ####################################################
@@ -1524,27 +1543,15 @@ class RoomClient {
     }
 
     getVideoConstraints(deviceId) {
-        const defaultFrameRate = {
-            min: 5,
-            ideal: 15,
-            max: 30,
-        };
+        const defaultFrameRate = { ideal: 30 };
         const selectedValue = this.getSelectedIndexValue(videoFps);
         const customFrameRate = parseInt(selectedValue, 10);
         const frameRate = selectedValue == 'max' ? defaultFrameRate : customFrameRate;
         let videoConstraints = {
             audio: false,
             video: {
-                width: {
-                    min: 640,
-                    ideal: 1920,
-                    max: 3840,
-                },
-                height: {
-                    min: 480,
-                    ideal: 1080,
-                    max: 2160,
-                },
+                width: { ideal: 3840 },
+                height: { ideal: 2160 },
                 deviceId: deviceId,
                 aspectRatio: 1.777, // 16:9
                 frameRate: frameRate,
@@ -2180,6 +2187,8 @@ class RoomClient {
         try {
             wbUpdate();
 
+            this.editorUpdate();
+
             const { consumer, stream, kind } = await this.getConsumeStream(producer_id, peer_info.peer_id, type);
 
             console.log('CONSUMER MEDIA TYPE ----> ' + type);
@@ -2467,6 +2476,13 @@ class RoomClient {
         if (consumer_kind === 'video') {
             const d = this.getId(consumer_id + '__video');
             if (d) {
+                // Check if video is in focus-mode...
+                if (d.hasAttribute('focus-mode')) {
+                    const dhaBtn = this.getId(consumer_id + '__hideALL');
+                    if (dhaBtn) {
+                        dhaBtn.click();
+                    }
+                }
                 d.parentNode.removeChild(d);
                 //alert(this.pinnedVideoPlayerId + '==' + consumer_id);
                 if (this.isVideoPinned && this.pinnedVideoPlayerId == consumer_id) {
@@ -2614,6 +2630,8 @@ class RoomClient {
         console.log('[setVideoOff] Video-element-count', this.videoMediaContainer.childElementCount);
         //
         wbUpdate();
+
+        this.editorUpdate();
 
         this.handleHideMe();
     }
@@ -3259,28 +3277,36 @@ class RoomClient {
     }
 
     toggleFullScreen(elem = null) {
-        let el = elem ? elem : document.documentElement;
-        document.fullscreenEnabled =
-            document.fullscreenEnabled ||
-            document.webkitFullscreenEnabled ||
-            document.mozFullScreenEnabled ||
-            document.msFullscreenEnabled;
-        document.exitFullscreen =
-            document.exitFullscreen ||
-            document.webkitExitFullscreen ||
-            document.mozCancelFullScreen ||
-            document.msExitFullscreen;
-        el.requestFullscreen =
-            el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullScreen;
-        if (document.fullscreenEnabled) {
+        const element = elem ? elem : document.documentElement;
+        const fullScreen = this.isFullScreen();
+        fullScreen ? this.goOutFullscreen(element) : this.goInFullscreen(element);
+        if (elem === null) this.isVideoOnFullScreen = fullScreen;
+    }
+
+    isFullScreen() {
+        const elementFullScreen =
             document.fullscreenElement ||
             document.webkitFullscreenElement ||
             document.mozFullScreenElement ||
-            document.msFullscreenElement
-                ? document.exitFullscreen()
-                : el.requestFullscreen();
-        }
-        if (elem == null) this.isVideoOnFullScreen = document.fullscreenEnabled;
+            document.msFullscreenElement ||
+            null;
+        if (elementFullScreen === null) return false;
+        return true;
+    }
+
+    goInFullscreen(element) {
+        if (element.requestFullscreen) element.requestFullscreen();
+        else if (element.mozRequestFullScreen) element.mozRequestFullScreen();
+        else if (element.webkitRequestFullscreen) element.webkitRequestFullscreen();
+        else if (element.msRequestFullscreen) element.msRequestFullscreen();
+        else this.userLog('warning', 'Full screen mode not supported by this browser on this device', 'top-end');
+    }
+
+    goOutFullscreen(element) {
+        if (element.exitFullscreen) element.exitFullscreen();
+        else if (element.mozCancelFullScreen) element.mozCancelFullScreen();
+        else if (element.webkitExitFullscreen) element.webkitExitFullscreen();
+        else if (element.msExitFullscreen) element.msExitFullscreen();
     }
 
     handleFS(elemId, fsId) {
@@ -3294,7 +3320,6 @@ class RoomClient {
                 }
                 videoPlayer.style.pointerEvents = this.isVideoOnFullScreen ? 'auto' : 'none';
                 this.toggleFullScreen(videoPlayer);
-                this.isVideoOnFullScreen = this.isVideoOnFullScreen ? false : true;
             });
         }
         if (videoPlayer) {
@@ -3306,7 +3331,6 @@ class RoomClient {
                     if ((this.isMobileDevice && this.isVideoOnFullScreen) || !this.isMobileDevice) {
                         videoPlayer.style.pointerEvents = this.isVideoOnFullScreen ? 'auto' : 'none';
                         this.toggleFullScreen(videoPlayer);
-                        this.isVideoOnFullScreen = this.isVideoOnFullScreen ? false : true;
                     }
                 }
             });
@@ -3487,10 +3511,7 @@ class RoomClient {
 
     removeVideoPinMediaContainer() {
         this.videoPinMediaContainer.style.display = 'none';
-        this.videoMediaContainer.style.top = 0;
-        this.videoMediaContainer.style.right = null;
-        this.videoMediaContainer.style.width = '100%';
-        this.videoMediaContainer.style.height = '100%';
+        this.videoMediaContainerUnpin();
         this.pinnedVideoPlayerId = null;
         this.isVideoPinned = false;
         if (this.isChatPinned) {
@@ -3499,9 +3520,25 @@ class RoomClient {
         if (this.isPollPinned) {
             this.pollPin();
         }
+        if (this.isEditorPinned) {
+            this.editorPin();
+        }
         if (this.transcription.isPin()) {
             this.transcription.pinned();
         }
+    }
+
+    videoMediaContainerPin() {
+        this.videoMediaContainer.style.top = 0;
+        this.videoMediaContainer.style.width = '75%';
+        this.videoMediaContainer.style.height = '100%';
+    }
+
+    videoMediaContainerUnpin() {
+        this.videoMediaContainer.style.top = 0;
+        this.videoMediaContainer.style.right = null;
+        this.videoMediaContainer.style.width = '100%';
+        this.videoMediaContainer.style.height = '100%';
     }
 
     adaptVideoObjectFit(index) {
@@ -3699,6 +3736,9 @@ class RoomClient {
         if (this.isPollPinned) {
             return userLog('info', 'Please unpin the poll that appears to be currently pinned', 'top-end');
         }
+        if (this.isEditorPinned) {
+            return userLog('info', 'Please unpin the editor that appears to be currently pinned', 'top-end');
+        }
         this.isChatPinned ? this.chatUnpin() : this.chatPin();
         this.sound('click');
     }
@@ -3729,9 +3769,7 @@ class RoomClient {
 
     chatPin() {
         if (!this.isVideoPinned) {
-            this.videoMediaContainer.style.top = 0;
-            this.videoMediaContainer.style.width = '75%';
-            this.videoMediaContainer.style.height = '100%';
+            this.videoMediaContainerPin();
         }
         this.chatPinned();
         this.isChatPinned = true;
@@ -3745,10 +3783,7 @@ class RoomClient {
 
     chatUnpin() {
         if (!this.isVideoPinned) {
-            this.videoMediaContainer.style.top = 0;
-            this.videoMediaContainer.style.right = null;
-            this.videoMediaContainer.style.width = '100%';
-            this.videoMediaContainer.style.height = '100%';
+            this.videoMediaContainerUnpin();
         }
         document.documentElement.style.setProperty('--msger-width', '800px');
         document.documentElement.style.setProperty('--msger-height', '700px');
@@ -4370,30 +4405,28 @@ class RoomClient {
         if (this.isChatPinned) {
             return userLog('info', 'Please unpin the chat that appears to be currently pinned', 'top-end');
         }
+        if (this.isEditorPinned) {
+            return userLog('info', 'Please unpin the editor that appears to be currently pinned', 'top-end');
+        }
         this.isPollPinned ? this.pollUnpin() : this.pollPin();
         this.sound('click');
     }
 
     pollPin() {
         if (!this.isVideoPinned) {
-            this.videoMediaContainer.style.top = 0;
-            this.videoMediaContainer.style.width = '75%';
-            this.videoMediaContainer.style.height = '100%';
+            this.videoMediaContainerPin();
         }
         this.pollPinned();
         this.isPollPinned = true;
         setColor(pollTogglePin, 'lime');
         resizeVideoMedia();
-        chatRoom.style.resize = 'none';
+        pollRoom.style.resize = 'none';
         if (!this.isMobileDevice) this.makeUnDraggable(pollRoom, pollHeader);
     }
 
     pollUnpin() {
         if (!this.isVideoPinned) {
-            this.videoMediaContainer.style.top = 0;
-            this.videoMediaContainer.style.right = null;
-            this.videoMediaContainer.style.width = '100%';
-            this.videoMediaContainer.style.height = '100%';
+            this.videoMediaContainerUnpin();
         }
         pollRoom.style.maxWidth = '600px';
         pollRoom.style.maxHeight = '700px';
@@ -4549,6 +4582,10 @@ class RoomClient {
             });
             pollButtonsDiv.appendChild(deletePollButton);
 
+            // Add thematic break
+            const hr = document.createElement('hr');
+            pollDiv.appendChild(hr);
+
             // Append buttons to poll
             pollDiv.appendChild(pollButtonsDiv);
 
@@ -4661,6 +4698,277 @@ class RoomClient {
         const dateTime = getDataTimeStringFormat();
         const roomName = this.room_id.trim();
         return `Poll_${roomName}_${dateTime}.txt`;
+    }
+
+    // ####################################################
+    // EDITOR
+    // ####################################################
+
+    toggleEditor() {
+        editorRoom.classList.toggle('show');
+        if (!this.isEditorOpen) {
+            this.editorCenter();
+            this.sound('open');
+        }
+        this.isEditorOpen = !this.isEditorOpen;
+        if (this.isEditorPinned) this.editorUnpin();
+    }
+
+    toggleLockUnlockEditor() {
+        this.isEditorLocked = !this.isEditorLocked;
+
+        const btnToShow = this.isEditorLocked ? editorLockBtn : editorUnlockBtn;
+        const btnToHide = this.isEditorLocked ? editorUnlockBtn : editorLockBtn;
+        const btnColor = this.isEditorLocked ? 'red' : 'white';
+        const action = this.isEditorLocked ? 'lock' : 'unlock';
+
+        show(btnToShow);
+        hide(btnToHide);
+        setColor(editorLockBtn, btnColor);
+
+        this.editorSendAction(action);
+
+        if (this.isEditorLocked) {
+            userLog('info', 'The Editor is locked. \n The participants cannot interact with it.', 'top-right');
+            sound('locked');
+        }
+    }
+
+    editorCenter() {
+        editorRoom.style.position = 'fixed';
+        editorRoom.style.transform = 'translate(-50%, -50%)';
+        editorRoom.style.top = '50%';
+        editorRoom.style.left = '50%';
+    }
+
+    toggleEditorPin() {
+        if (transcription.isPin()) {
+            return userLog('info', 'Please unpin the transcription that appears to be currently pinned', 'top-end');
+        }
+        if (this.isPollPinned) {
+            return userLog('info', 'Please unpin the poll that appears to be currently pinned', 'top-end');
+        }
+        if (this.isChatPinned) {
+            return userLog('info', 'Please unpin the chat that appears to be currently pinned', 'top-end');
+        }
+        this.isEditorPinned ? this.editorUnpin() : this.editorPin();
+        this.sound('click');
+    }
+
+    editorPin() {
+        if (!this.isVideoPinned) {
+            this.videoMediaContainer.style.top = 0;
+            this.videoMediaContainer.style.width = '70%';
+            this.videoMediaContainer.style.height = '100%';
+        }
+        this.editorPinned();
+        this.isEditorPinned = true;
+        setColor(editorTogglePin, 'lime');
+        resizeVideoMedia();
+        document.documentElement.style.setProperty('--editor-height', '80vh');
+        //if (!this.isMobileDevice) this.makeUnDraggable(editorRoom, editorHeader);
+    }
+
+    editorUnpin() {
+        if (!this.isVideoPinned) {
+            this.videoMediaContainerUnpin();
+        }
+        editorRoom.style.maxWidth = '100%';
+        editorRoom.style.maxHeight = '100%';
+        this.pollCenter();
+        this.isEditorPinned = false;
+        setColor(editorTogglePin, 'white');
+        resizeVideoMedia();
+        document.documentElement.style.setProperty('--editor-height', '85vh');
+        //if (!this.isMobileDevice) this.makeDraggable(editorRoom, editorHeader);
+    }
+
+    editorPinned() {
+        editorRoom.style.position = 'absolute';
+        editorRoom.style.top = 0;
+        editorRoom.style.right = 0;
+        editorRoom.style.left = null;
+        editorRoom.style.transform = null;
+        editorRoom.style.maxWidth = '30%';
+        editorRoom.style.maxHeight = '100%';
+    }
+
+    editorUpdate() {
+        if (this.isEditorOpen && (!isRulesActive || isPresenter)) {
+            console.log('IsPresenter: update editor content to the participants in the room');
+            const content = quill.getContents(); // Get content in Delta format
+            this.socket.emit('editorUpdate', content);
+            const action = this.isEditorLocked ? 'lock' : 'unlock';
+            this.editorSendAction(action);
+        }
+    }
+
+    handleEditorUpdateData(data) {
+        this.editorOpen();
+        quill.setContents(data);
+    }
+
+    handleEditorData(data) {
+        this.editorOpen();
+        quill.updateContents(data);
+    }
+
+    editorOpen() {
+        if (!this.isEditorOpen) {
+            this.sound('open');
+            this.toggleEditor();
+        }
+    }
+
+    handleEditorActionsData(data) {
+        const { peer_name, action } = data;
+        switch (action) {
+            case 'open':
+                if (this.isEditorOpen) return;
+                this.toggleEditor();
+                this.userLog('info', `${icons.editor} ${peer_name} open editor`, 'top-end', 6000);
+                break;
+            case 'close':
+                if (!this.isEditorOpen) return;
+                this.toggleEditor();
+                this.userLog('info', `${icons.editor} ${peer_name} close editor`, 'top-end', 6000);
+                break;
+            case 'clean':
+                quill.setText('');
+                this.userLog('info', `${icons.editor} ${peer_name} cleared editor`, 'top-end', 6000);
+                break;
+            case 'lock':
+                this.isEditorLocked = true;
+                quill.enable(false);
+                this.userLog('info', `${icons.editor} ${peer_name} locked the editor`, 'top-end', 6000);
+                break;
+            case 'unlock':
+                this.isEditorLocked = false;
+                quill.enable(true);
+                this.userLog('info', `${icons.editor} ${peer_name} unlocked the editor`, 'top-end', 6000);
+                break;
+            default:
+                break;
+        }
+    }
+
+    editorIsLocked() {
+        return this.isEditorLocked;
+    }
+
+    editorUndo() {
+        quill.history.undo();
+    }
+
+    editorRedo() {
+        quill.history.redo();
+    }
+
+    editorCopy() {
+        const content = quill.getText();
+        if (content.trim().length === 0) {
+            return this.userLog('info', 'Nothing to copy', 'top-end');
+        }
+        copyToClipboard(content, false);
+    }
+
+    editorClean() {
+        if (!isPresenter && this.editorIsLocked()) {
+            userLog('info', 'The Editor is locked. \n You cannot interact with it.', 'top-right');
+            return;
+        }
+        const content = quill.getText();
+        if (content.trim().length === 0) {
+            return this.userLog('info', 'Nothing to clear', 'top-end');
+        }
+        Swal.fire({
+            background: swalBackground,
+            position: 'center',
+            title: 'Clear the editor content?',
+            imageUrl: image.delete,
+            showDenyButton: true,
+            confirmButtonText: `Yes`,
+            denyButtonText: `No`,
+            showClass: { popup: 'animate__animated animate__fadeInDown' },
+            hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+        }).then((result) => {
+            if (result.isConfirmed) {
+                quill.setText('');
+                this.editorSendAction('clean');
+                this.sound('delete');
+            }
+        });
+    }
+
+    editorSave() {
+        Swal.fire({
+            background: swalBackground,
+            position: 'top',
+            imageUrl: image.save,
+            title: 'Editor save options',
+            showDenyButton: true,
+            showCancelButton: true,
+            cancelButtonColor: 'red',
+            denyButtonColor: 'green',
+            confirmButtonText: `Text`,
+            denyButtonText: `Html`,
+            cancelButtonText: `Cancel`,
+            showClass: { popup: 'animate__animated animate__fadeInDown' },
+            hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+        }).then((result) => {
+            this.handleEditorSaveResult(result);
+        });
+    }
+
+    handleEditorSaveResult(result) {
+        if (result.isConfirmed) {
+            this.saveEditorAsText();
+        } else if (result.isDenied) {
+            this.saveEditorAsHtml();
+        }
+    }
+
+    saveEditorAsText() {
+        const content = quill.getText().trim();
+        if (content.length === 0) {
+            return this.userLog('info', 'No data to save!', 'top-end');
+        }
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const fileName = this.generateFileName('editor.txt');
+        this.saveBlobToFile(blob, fileName);
+        this.sound('download');
+    }
+
+    saveEditorAsHtml() {
+        const content = quill.root.innerHTML.trim();
+        if (content === '<p><br></p>') {
+            return this.userLog('info', 'No data to save!', 'top-end');
+        }
+        const fileName = this.generateFileName('editor.html');
+        this.saveAsHtml(content, fileName);
+        this.sound('download');
+    }
+
+    generateFileName(extension) {
+        return `Room_${this.room_id}_${getDataTimeString()}_${extension}`;
+    }
+
+    saveAsHtml(content, file) {
+        const blob = new Blob([content], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }, 100);
+    }
+
+    editorSendAction(action) {
+        this.socket.emit('editorActions', { peer_name: this.peer_name, action: action });
     }
 
     // ####################################################
@@ -5142,9 +5450,20 @@ class RoomClient {
         if (videoPlayer) {
             videoPlayer.addEventListener('dragover', function (e) {
                 e.preventDefault();
+                e.stopPropagation();
+                e.target.parentElement.style.outline = `2px dashed var(--dd-color)`;
             });
+
+            videoPlayer.addEventListener('dragleave', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.target.parentElement.style.outline = 'none';
+            });
+
             videoPlayer.addEventListener('drop', function (e) {
                 e.preventDefault();
+                e.stopPropagation();
+                e.target.parentElement.style.outline = 'none';
                 if (itsMe) {
                     return userLog('warning', 'You cannot send files to yourself.', 'top-end');
                 }
@@ -6178,7 +6497,7 @@ class RoomClient {
             background: swalBackground,
             imageUrl: image.forbidden,
             title: 'Oops, Room not valid',
-            text: 'Invalid room name! Must be a UUID4 or an ALPHANUMERIC string without special characters or spaces',
+            text: 'Invalid Room name! Path traversal pattern detected!',
             confirmButtonText: `OK`,
             showClass: { popup: 'animate__animated animate__fadeInDown' },
             hideClass: { popup: 'animate__animated animate__fadeOutUp' },
@@ -6477,14 +6796,16 @@ class RoomClient {
                         6000,
                     );
                 }
+                const videoContainer = this.getId(videoContainerId);
                 isHideALLVideosActive = !isHideALLVideosActive;
                 e.target.style.color = isHideALLVideosActive ? 'lime' : 'white';
                 if (isHideALLVideosActive) {
-                    const videoContainer = this.getId(videoContainerId);
                     videoContainer.style.width = '100%';
                     videoContainer.style.height = '100%';
+                    videoContainer.setAttribute('focus-mode', 'true');
                 } else {
                     resizeVideoMedia();
+                    videoContainer.removeAttribute('focus-mode');
                 }
                 const children = this.videoMediaContainer.children;
                 for (let child of children) {
@@ -8207,9 +8528,17 @@ class RoomClient {
     // ##############################################
 
     openRTMPStreamer() {
-        const color = encodeURIComponent(themeCustom.color);
-        const options = `&t=${selectTheme.value}` + (themeCustom.keep ? `&c=${color}` : '');
+        const themeColor = encodeURIComponent(themeCustom.color);
+
+        const options =
+            `&vr=${videoQuality.value}` +
+            `&vf=${videoFps.value}` +
+            `&sf=${screenFps.value}` +
+            `&ts=${selectTheme.value}` +
+            (themeCustom.keep ? `&tc=${themeColor}` : '');
+
         const url = `/rtmp?v=${videoSelect.value}&a=${microphoneSelect.value}${options}`;
+
         openURL(url, true);
     }
 
@@ -8271,6 +8600,56 @@ class RoomClient {
                 copyToClipboard(rtmp);
             }
         });
+    }
+
+    // ####################################################
+    // ROOM SNAPSHOT WINDOW/SCREEN/TAB
+    // ####################################################
+
+    async snapshotRoom() {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        const video = document.createElement('video');
+
+        try {
+            const captureStream = await navigator.mediaDevices.getDisplayMedia({
+                video: true,
+            });
+
+            video.srcObject = captureStream;
+            video.onloadedmetadata = () => {
+                video.play();
+            };
+
+            // Wait for the video to start playing
+            video.onplay = async () => {
+                this.sound('snapshot');
+
+                // Sleep some ms
+                await this.sleep(1000);
+
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                // Create a link element to download the image
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = 'Room_' + this.room_id + '_' + getDataTimeString() + '_snapshot.png';
+                link.click();
+
+                // Stop all video tracks to release the capture stream
+                captureStream.getTracks().forEach((track) => track.stop());
+
+                // Clean up: remove references to avoid memory leaks
+                video.srcObject = null;
+                canvas.width = 0;
+                canvas.height = 0;
+            };
+        } catch (err) {
+            console.error('Error: ' + err);
+            this.userLog('error', 'Snapshot room error ' + err.message, 'top-end', 6000);
+        }
     }
 
     toggleVideoMirror() {

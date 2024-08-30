@@ -26,6 +26,7 @@ let BUTTONS = {
         raiseHandButton: true,
         transcriptionButton: true,
         whiteboardButton: true,
+        snapshotRoomButton: true,
         emojiRoomButton: true,
         settingsButton: true,
         aboutButton: true, // Please keep me always visible, thank you!
@@ -133,6 +134,7 @@ function handleRules(isPresenter) {
         //BUTTONS.consumerVideo.muteAudioButton = false;
         //BUTTONS.consumerVideo.muteVideoButton = false;
         BUTTONS.whiteboard.whiteboardLockButton = false;
+
         //...
     } else {
         // ##################################
@@ -143,6 +145,8 @@ function handleRules(isPresenter) {
         BUTTONS.settings.lockRoomButton = BUTTONS.settings.lockRoomButton && !isRoomLocked;
         BUTTONS.settings.unlockRoomButton = BUTTONS.settings.lockRoomButton && isRoomLocked;
         BUTTONS.settings.sendEmailInvitation = true;
+
+        show(editorUnlockBtn);
         //...
 
         // ##################################
@@ -228,6 +232,7 @@ function handleRulesBroadcasting() {
     BUTTONS.main.swapCameraButton = false;
     //BUTTONS.main.raiseHandButton = false;
     BUTTONS.main.whiteboardButton = false;
+    //BUTTONS.main.snapshotRoomButton = false;
     //BUTTONS.main.emojiRoomButton = false,
     //BUTTONS.main.pollButton = false;
     BUTTONS.main.transcriptionButton = false;
@@ -262,8 +267,10 @@ function handleRulesBroadcasting() {
     elemDisplay('swapCameraButton', false);
     //elemDisplay('raiseHandButton', false);
     elemDisplay('whiteboardButton', false);
+    //elemDisplay('snapshotRoomButton', false);
     //elemDisplay('emojiRoomButton', false);
     //elemDisplay('pollButton', false);
+    //elemDisplay('editorButton', false);
     elemDisplay('transcriptionButton', false);
     elemDisplay('lockRoomButton', false);
     elemDisplay('unlockRoomButton', false);

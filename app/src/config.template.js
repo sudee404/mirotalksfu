@@ -177,16 +177,19 @@ module.exports = {
             {
                 username: 'username',
                 password: 'password',
+                displayname: 'username displayname',
                 allowed_rooms: ['*'],
             },
             {
                 username: 'username2',
                 password: 'password2',
+                displayname: 'username2 displayname',
                 allowed_rooms: ['room1', 'room2'],
             },
             {
                 username: 'username3',
                 password: 'password3',
+                displayname: 'username3 displayname',
             },
             //...
         ],
@@ -356,9 +359,11 @@ module.exports = {
                 swapCameraButton: true,
                 chatButton: true,
                 pollButton: true,
+                editorButton: true,
                 raiseHandButton: true,
                 transcriptionButton: true,
                 whiteboardButton: true,
+                snapshotRoomButton: true,
                 emojiRoomButton: true,
                 settingsButton: true,
                 aboutButton: true, // Please keep me always visible, thank you!
@@ -452,6 +457,9 @@ module.exports = {
         // Worker settings
         numWorkers: numWorkers,
         worker: {
+            rtcMinPort: 40000,
+            rtcMaxPort: 40100,
+            disableLiburing: false, // https://github.com/axboe/liburing
             logLevel: 'error',
             logTags: ['info', 'ice', 'dtls', 'rtp', 'srtp', 'rtcp', 'rtx', 'bwe', 'score', 'simulcast', 'svc', 'sctp'],
         },

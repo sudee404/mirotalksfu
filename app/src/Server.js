@@ -7,22 +7,24 @@
      ██ ██      ██   ██  ██  ██  ██      ██   ██ 
 ███████ ███████ ██   ██   ████   ███████ ██   ██                                           
 
-dependencies: {
+prod dependencies: {
     @ffmpeg-installer/ffmpeg: https://www.npmjs.com/package/@ffmpeg-installer/ffmpeg
     @sentry/node            : https://www.npmjs.com/package/@sentry/node
-    @sentry/integrations    : https://www.npmjs.com/package/@sentry/integrations
     axios                   : https://www.npmjs.com/package/axios
     body-parser             : https://www.npmjs.com/package/body-parser
     compression             : https://www.npmjs.com/package/compression
     colors                  : https://www.npmjs.com/package/colors
     cors                    : https://www.npmjs.com/package/cors
     crypto-js               : https://www.npmjs.com/package/crypto-js
+    dompurify               : https://www.npmjs.com/package/dompurify
     express                 : https://www.npmjs.com/package/express
     express-openid-connect  : https://www.npmjs.com/package/express-openid-connect
     fluent-ffmpeg           : https://www.npmjs.com/package/fluent-ffmpeg
+    he                      : https://www.npmjs.com/package/he
     httpolyglot             : https://www.npmjs.com/package/httpolyglot
-    jsonwebtoken            : https://www.npmjs.com/package/jsonwebtoken
     js-yaml                 : https://www.npmjs.com/package/js-yaml
+    jsdom                   : https://www.npmjs.com/package/jsdom
+    jsonwebtoken            : https://www.npmjs.com/package/jsonwebtoken
     mediasoup               : https://www.npmjs.com/package/mediasoup
     mediasoup-client        : https://www.npmjs.com/package/mediasoup-client
     ngrok                   : https://www.npmjs.com/package/ngrok
@@ -31,7 +33,16 @@ dependencies: {
     socket.io               : https://www.npmjs.com/package/socket.io
     swagger-ui-express      : https://www.npmjs.com/package/swagger-ui-express
     uuid                    : https://www.npmjs.com/package/uuid
-    xss                     : https://www.npmjs.com/package/xss
+}
+
+dev dependencies: {
+    mocha                   : https://www.npmjs.com/package/mocha
+    node-fetch              : https://www.npmjs.com/package/node-fetch
+    nodemon                 : https://www.npmjs.com/package/nodemon
+    prettier                : https://www.npmjs.com/package/prettier
+    proxyquire              : https://www.npmjs.com/package/proxyquire
+    should                  : https://www.npmjs.com/package/should
+    sinon                   : https://www.npmjs.com/package/sinon
 }
 */
 
@@ -44,7 +55,7 @@ dependencies: {
  * @license For commercial or closed source, contact us at license.mirotalk@gmail.com or purchase directly via CodeCanyon
  * @license CodeCanyon: https://codecanyon.net/item/mirotalk-sfu-webrtc-realtime-video-conferences/40769970
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.5.41
+ * @version 1.5.64
  *
  */
 
@@ -75,7 +86,6 @@ const yaml = require('js-yaml');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = yaml.load(fs.readFileSync(path.join(__dirname, '/../api/swagger.yaml'), 'utf8'));
 const Sentry = require('@sentry/node');
-const { CaptureConsole } = require('@sentry/integrations');
 const restrictAccessByIP = require('./middleware/IpWhitelist.js');
 const packageJson = require('../../package.json');
 
@@ -150,7 +160,7 @@ if (sentryEnabled) {
     Sentry.init({
         dsn: sentryDSN,
         integrations: [
-            new CaptureConsole({
+            Sentry.captureConsoleIntegration({
                 // ['log', 'info', 'warn', 'error', 'debug', 'assert']
                 levels: ['error'],
             }),
@@ -163,7 +173,7 @@ if (sentryEnabled) {
     log.warn('test-warning');
     log.error('test-error');
     log.debug('test-debug');
-    */
+*/
 }
 
 // Stats
@@ -470,8 +480,7 @@ function startServer() {
 
             if (!Validator.isValidRoomName(room)) {
                 return res.status(400).json({
-                    message:
-                        'Invalid Room name! Must be a UUID4 or an ALPHANUMERIC string without special characters or spaces.',
+                    message: 'Invalid Room name!\nPath traversal pattern detected!',
                 });
             }
 
@@ -1080,7 +1089,7 @@ function startServer() {
     async function createWorkers() {
         const { numWorkers } = config.mediasoup;
 
-        const { logLevel, logTags, rtcMinPort, rtcMaxPort } = config.mediasoup.worker;
+        const { logLevel, logTags, rtcMinPort, rtcMaxPort, disableLiburing } = config.mediasoup.worker;
 
         log.info('WORKERS:', numWorkers);
 
@@ -1091,6 +1100,7 @@ function startServer() {
                 logTags: logTags,
                 rtcMinPort: rtcMinPort,
                 rtcMaxPort: rtcMaxPort,
+                disableLiburing: disableLiburing,
             });
 
             if (webRtcServerActive) {
@@ -2515,6 +2525,42 @@ function startServer() {
             }
         });
 
+        // Room collaborative editor
+
+        socket.on('editorChange', (dataObject) => {
+            if (!roomList.has(socket.room_id)) return;
+
+            //const data = checkXSS(dataObject);
+            const data = dataObject;
+
+            const room = roomList.get(socket.room_id);
+
+            room.broadCast(socket.id, 'editorChange', data);
+        });
+
+        socket.on('editorActions', (dataObject) => {
+            if (!roomList.has(socket.room_id)) return;
+
+            const data = checkXSS(dataObject);
+
+            const room = roomList.get(socket.room_id);
+
+            log.debug('editorActions', data);
+
+            room.broadCast(socket.id, 'editorActions', data);
+        });
+
+        socket.on('editorUpdate', (dataObject) => {
+            if (!roomList.has(socket.room_id)) return;
+
+            //const data = checkXSS(dataObject);
+            const data = dataObject;
+
+            const room = roomList.get(socket.room_id);
+
+            room.broadCast(socket.id, 'editorUpdate', data);
+        });
+
         socket.on('disconnect', async () => {
             if (!roomList.has(socket.room_id)) return;
 
@@ -2886,7 +2932,9 @@ function startServer() {
     }
 
     function isRoomAllowedForUser(message, username, room) {
-        log.debug('isRoomAllowedForUser ------>', { message, username, room });
+        const logData = { message, username, room };
+
+        log.debug('isRoomAllowedForUser ------>', logData);
 
         const isOIDCEnabled = config.oidc && config.oidc.enabled;
 
@@ -2898,7 +2946,7 @@ function startServer() {
                 return true;
             }
 
-            const user = hostCfg.users.find((user) => user.username === username);
+            const user = hostCfg.users.find((user) => user.displayname === username || user.username === username);
 
             if (!isOIDCEnabled && !user) {
                 log.debug('isRoomAllowedForUser - user not found', username);
@@ -2908,8 +2956,7 @@ function startServer() {
             if (
                 isOIDCEnabled ||
                 !user.allowed_rooms ||
-                user.allowed_rooms.includes('*') ||
-                user.allowed_rooms.includes(room)
+                (user.allowed_rooms && (user.allowed_rooms.includes('*') || user.allowed_rooms.includes(room)))
             ) {
                 log.debug('isRoomAllowedForUser - user room allowed', room);
                 return true;
