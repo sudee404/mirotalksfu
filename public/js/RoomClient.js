@@ -9,7 +9,7 @@
  * @license For commercial or closed source, contact us at license.mirotalk@gmail.com or purchase directly via CodeCanyon
  * @license CodeCanyon: https://codecanyon.net/item/mirotalk-sfu-webrtc-realtime-video-conferences/40769970
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.5.64
+ * @version 1.5.84
  *
  */
 
@@ -29,6 +29,8 @@ const html = {
     userHand: 'fas fa-hand-paper pulsate',
     pip: 'fas fa-images',
     fullScreen: 'fas fa-expand',
+    fullScreenOn: 'fas fa-compress-alt',
+    fullScreenOff: 'fas fa-expand-alt',
     snapshot: 'fas fa-camera-retro',
     sendFile: 'fas fa-upload',
     sendMsg: 'fas fa-paper-plane',
@@ -43,6 +45,7 @@ const html = {
     videoPrivacy: 'far fa-circle',
     expand: 'fas fa-ellipsis-vertical',
     hideALL: 'fas fa-eye',
+    mirror: 'fas fa-arrow-right-arrow-left',
 };
 
 const icons = {
@@ -255,6 +258,7 @@ class RoomClient {
         this.isMySettingsOpen = false;
 
         this._isConnected = false;
+        this.isDocumentOnFullScreen = false;
         this.isVideoOnFullScreen = false;
         this.isVideoFullScreenSupported = this.isFullScreenSupported();
         this.isVideoPictureInPictureSupported = document.pictureInPictureEnabled;
@@ -658,6 +662,8 @@ class RoomClient {
             return;
         }
 
+        producerTransportData['proprietaryConstraints'] = { optional: [{ googDscp: true }] };
+
         this.producerTransport = device.createSendTransport(producerTransportData);
 
         console.info('07.4 producerTransportData ---->', {
@@ -704,19 +710,18 @@ class RoomClient {
                     break;
                 case 'disconnected':
                     console.log('Producer Transport disconnected', { id: this.producerTransport.id });
-                    /*
+
                     this.restartIce();
 
                     popupHtmlMessage(
                         null,
                         image.network,
                         'Producer Transport disconnected',
-                        'Check Your Network Connectivity (Restarted ICE)',
+                        'Network connection may have dropped or changed (Restarted ICE)',
                         'center',
                         false,
-                        true
+                        false,
                     );
-                    */
                     break;
                 case 'failed':
                     console.warn('Producer Transport failed', { id: this.producerTransport.id });
@@ -791,19 +796,19 @@ class RoomClient {
                     break;
                 case 'disconnected':
                     console.log('Consumer Transport disconnected', { id: this.consumerTransport.id });
-                /*
+
                     this.restartIce();
 
                     popupHtmlMessage(
                         null,
                         image.network,
                         'Consumer Transport disconnected',
-                        'Check Your Network Connectivity (Restarted ICE)',
+                        'Network connection may have dropped or changed (Restarted ICE)',
                         'center',
                         false,
-                        true
+                        false,
                     );
-                    */
+                    break;
                 case 'failed':
                     console.warn('Consumer Transport failed', { id: this.consumerTransport.id });
 
@@ -1402,6 +1407,10 @@ class RoomClient {
                 if (type == mediaType.video) this.videoProducerId = producer.id;
                 if (type == mediaType.screen) this.screenProducerId = producer.id;
                 elem = await this.handleProducer(producer.id, type, stream);
+                // No mirror effect for producer
+                if (!isInitVideoMirror && elem.classList.contains('mirror')) {
+                    elem.classList.remove('mirror');
+                }
                 //if (!screen && !isEnumerateDevices) enumerateVideoDevices(stream);
             } else {
                 this.localAudioStream = stream;
@@ -1416,12 +1425,12 @@ class RoomClient {
             }
 
             producer.on('trackended', () => {
-                console.log('Producer track ended', { id: producer.id });
+                console.log('Producer track ended', { id: producer.id, type });
                 this.closeProducer(type);
             });
 
             producer.on('transportclose', () => {
-                console.log('Producer transport close', { id: producer.id });
+                console.log('Producer transport close', { id: producer.id, type });
                 if (!audio) {
                     const d = this.getId(producer.id + '__video');
                     elem.srcObject.getTracks().forEach(function (track) {
@@ -1443,7 +1452,7 @@ class RoomClient {
             });
 
             producer.on('close', () => {
-                console.log('Closing producer', { id: producer.id });
+                console.log('Closing producer', { id: producer.id, type });
                 if (!audio) {
                     const d = this.getId(producer.id + '__video');
                     elem.srcObject.getTracks().forEach(function (track) {
@@ -1878,7 +1887,7 @@ class RoomClient {
     }
 
     async handleProducer(id, type, stream) {
-        let elem, vb, vp, ts, d, p, i, au, pip, fs, pm, pb, pn;
+        let elem, vb, vp, ts, d, p, i, au, pip, fs, pm, pb, pn, mv;
         switch (type) {
             case mediaType.video:
             case mediaType.screen:
@@ -1910,6 +1919,9 @@ class RoomClient {
                 ts = document.createElement('button');
                 ts.id = id + '__snapshot';
                 ts.className = html.snapshot;
+                mv = document.createElement('button');
+                mv.id = id + '__mirror';
+                mv.className = html.mirror;
                 pn = document.createElement('button');
                 pn.id = id + '__pin';
                 pn.className = html.pin;
@@ -1941,6 +1953,7 @@ class RoomClient {
                 BUTTONS.producerVideo.videoPictureInPicture &&
                     this.isVideoPictureInPictureSupported &&
                     vb.appendChild(pip);
+                BUTTONS.producerVideo.videoMirrorButton && vb.appendChild(mv);
                 BUTTONS.producerVideo.fullScreenButton && this.isVideoFullScreenSupported && vb.appendChild(fs);
                 if (!this.isMobileDevice) vb.appendChild(pn);
                 d.appendChild(elem);
@@ -1955,6 +1968,7 @@ class RoomClient {
                 this.isVideoFullScreenSupported && this.handleFS(elem.id, fs.id);
                 this.handleDD(elem.id, this.peer_id, true);
                 this.handleTS(elem.id, ts.id);
+                this.handleMV(elem.id, mv.id);
                 this.handlePN(elem.id, pn.id, d.id, isScreen);
                 this.handleZV(elem.id, d.id, this.peer_id);
                 if (!isScreen) this.handleVP(elem.id, vp.id);
@@ -1964,6 +1978,7 @@ class RoomClient {
                 handleAspectRatio();
                 if (!this.isMobileDevice) {
                     this.setTippy(pn.id, 'Toggle Pin', 'bottom');
+                    this.setTippy(mv.id, 'Toggle mirror', 'bottom');
                     this.setTippy(pip.id, 'Toggle picture in picture', 'bottom');
                     this.setTippy(ts.id, 'Snapshot', 'bottom');
                     this.setTippy(vp.id, 'Toggle video privacy', 'bottom');
@@ -2205,12 +2220,12 @@ class RoomClient {
             }
 
             consumer.on('trackended', () => {
-                console.log('Consumer track end', { id: consumer.id });
+                console.log('Consumer track end', { id: consumer.id, type });
                 this.removeConsumer(consumer.id, consumer.kind);
             });
 
             consumer.on('transportclose', () => {
-                console.log('Consumer transport close', { id: consumer.id });
+                console.log('Consumer transport close', { id: consumer.id, type });
                 this.removeConsumer(consumer.id, consumer.kind);
             });
 
@@ -2258,7 +2273,7 @@ class RoomClient {
     }
 
     async handleConsumer(id, type, stream, peer_name, peer_info) {
-        let elem, vb, d, p, i, cm, au, pip, fs, ts, sf, sm, sv, gl, ban, ko, pb, pm, pv, pn, ha;
+        let elem, vb, d, p, i, cm, au, pip, fs, ts, sf, sm, sv, gl, ban, ko, pb, pm, pv, pn, ha, mv;
 
         let eDiv, eBtn, eVc; // expand buttons
 
@@ -2307,6 +2322,9 @@ class RoomClient {
                 pip = document.createElement('button');
                 pip.id = id + '__pictureInPicture';
                 pip.className = html.pip;
+                mv = document.createElement('button');
+                mv.id = id + '__videoMirror';
+                mv.className = html.mirror;
                 fs = document.createElement('button');
                 fs.id = id + '__fullScreen';
                 fs.className = html.fullScreen;
@@ -2375,6 +2393,7 @@ class RoomClient {
                 BUTTONS.consumerVideo.videoPictureInPicture &&
                     this.isVideoPictureInPictureSupported &&
                     vb.appendChild(pip);
+                BUTTONS.consumerVideo.videoMirrorButton && vb.appendChild(mv);
                 BUTTONS.consumerVideo.fullScreenButton && this.isVideoFullScreenSupported && vb.appendChild(fs);
                 BUTTONS.consumerVideo.focusVideoButton && vb.appendChild(ha);
                 if (!this.isMobileDevice) vb.appendChild(pn);
@@ -2389,6 +2408,7 @@ class RoomClient {
                 this.isVideoFullScreenSupported && this.handleFS(elem.id, fs.id);
                 this.handleDD(elem.id, remotePeerId);
                 this.handleTS(elem.id, ts.id);
+                this.handleMV(elem.id, mv.id);
                 this.handleSF(sf.id);
                 this.handleHA(ha.id, d.id);
                 this.handleSM(sm.id, peer_name);
@@ -2421,6 +2441,7 @@ class RoomClient {
                     this.setTippy(pn.id, 'Toggle Pin', 'bottom');
                     this.setTippy(ha.id, 'Toggle Focus mode', 'bottom');
                     this.setTippy(pip.id, 'Toggle picture in picture', 'bottom');
+                    this.setTippy(mv.id, 'Toggle mirror', 'bottom');
                     this.setTippy(ts.id, 'Snapshot', 'bottom');
                     this.setTippy(sf.id, 'Send file', 'bottom');
                     this.setTippy(sm.id, 'Send message', 'bottom');
@@ -2515,6 +2536,7 @@ class RoomClient {
             }
         }
 
+        this.consumers.get(consumer_id).close();
         this.consumers.delete(consumer_id);
         this.sound('left');
     }
@@ -3268,15 +3290,45 @@ class RoomClient {
     // ####################################################
 
     isFullScreenSupported() {
-        return (
+        const fsSupported =
             document.fullscreenEnabled ||
             document.webkitFullscreenEnabled ||
             document.mozFullScreenEnabled ||
-            document.msFullscreenEnabled
-        );
+            document.msFullscreenEnabled;
+
+        fsSupported ? this.handleFullScreenEvents() : (this.getId('fullScreenButton').style.display = 'none');
+
+        return fsSupported;
+    }
+
+    handleFullScreenEvents() {
+        document.addEventListener('fullscreenchange', (e) => {
+            const fullscreenElement = document.fullscreenElement;
+            if (!fullscreenElement) {
+                const fullScreenIcon = this.getId('fullScreenIcon');
+                fullScreenIcon.className = html.fullScreenOff;
+                this.isDocumentOnFullScreen = false;
+            }
+        });
+    }
+
+    toggleRoomFullScreen() {
+        const fullScreenIcon = this.getId('fullScreenIcon');
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+            fullScreenIcon.className = html.fullScreenOn;
+            this.isDocumentOnFullScreen = true;
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+                fullScreenIcon.className = html.fullScreenOff;
+                this.isDocumentOnFullScreen = false;
+            }
+        }
     }
 
     toggleFullScreen(elem = null) {
+        if (this.isDocumentOnFullScreen) return;
         const element = elem ? elem : document.documentElement;
         const fullScreen = this.isFullScreen();
         fullScreen ? this.goOutFullscreen(element) : this.goInFullscreen(element);
@@ -3571,6 +3623,21 @@ class RoomClient {
                 dataURL = canvas.toDataURL('image/png');
                 // console.log(dataURL);
                 saveDataToFile(dataURL, getDataTimeString() + '-SNAPSHOT.png');
+            });
+        }
+    }
+
+    // ####################################################
+    // HANDLE VIDEO MIRROR
+    // ####################################################
+
+    handleMV(elemId, tsId) {
+        let videoPlayer = this.getId(elemId);
+        let btnMv = this.getId(tsId);
+        if (btnMv && videoPlayer) {
+            btnMv.addEventListener('click', () => {
+                videoPlayer.classList.toggle('mirror');
+                //rc.roomMessage('toggleVideoMirror', videoPlayer.classList.contains('mirror'));
             });
         }
     }
@@ -6950,7 +7017,7 @@ class RoomClient {
                             const peerAudioButton = this.getId(data.peer_id + '___pAudio');
                             if (peerAudioButton) {
                                 const peerAudioIcon = peerAudioButton.querySelector('i');
-                                if (peerAudioIcon && peerAudioIcon.style.color == 'red') {
+                                if (peerAudioIcon && peerAudioIcon.classList.contains('red')) {
                                     if (isRulesActive && isPresenter) {
                                         data.action = 'unmute';
                                         return this.confirmPeerAction(data.action, data);
@@ -6976,7 +7043,7 @@ class RoomClient {
                             const peerVideoButton = this.getId(data.peer_id + '___pVideo');
                             if (peerVideoButton) {
                                 const peerVideoIcon = peerVideoButton.querySelector('i');
-                                if (peerVideoIcon && peerVideoIcon.style.color == 'red') {
+                                if (peerVideoIcon && peerVideoIcon.classList.contains('red')) {
                                     if (isRulesActive && isPresenter) {
                                         data.action = 'unhide';
                                         return this.confirmPeerAction(data.action, data);
@@ -7000,7 +7067,7 @@ class RoomClient {
                         const peerScreenButton = this.getId(id);
                         if (peerScreenButton) {
                             const peerScreenStatus = peerScreenButton.querySelector('i');
-                            if (peerScreenStatus && peerScreenStatus.style.color == 'red') {
+                            if (peerScreenStatus && peerScreenStatus.classList.contains('red')) {
                                 if (isRulesActive && isPresenter) {
                                     data.action = 'start';
                                     return this.confirmPeerAction(data.action, data);
@@ -7881,6 +7948,7 @@ class RoomClient {
                     'default',
                 ];
 
+                //console.log('AVATARS LISTS', completion.response.avatars);
                 completion.response.avatars.forEach((avatar) => {
                     avatar.avatar_states.forEach((avatarUi) => {
                         if (

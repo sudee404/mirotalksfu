@@ -11,8 +11,10 @@
 
         <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+        <meta
+            name="viewport"
+            content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+        />
         <meta
             id="description"
             name="description"
@@ -170,17 +172,21 @@ access to use this app.
                     <button id="initAudioVideoButton" class="fas fa-eye"></button>
                     <button id="initStartScreenButton" class="fas fa-desktop hidden"></button>
                     <button id="initStopScreenButton" class="fas fa-stop-circle hidden"></button>
+                    <button id="initVideoMirrorButton" class="fas fa-arrow-right-arrow-left"></button>
+                    <button id="initUsernameEmojiButton" class="fas fa-smile"></button>
                     <select id="initVideoSelect" class="form-select text-light bg-dark"></select>
                     <select id="initMicrophoneSelect" class="form-select text-light bg-dark"></select>
                     <select id="initSpeakerSelect" class="form-select text-light bg-dark"></select>
                 </div>
             </div>
+            <div id="usernameEmoji" class="usernameEmoji fadein center hidden"></div>
         </section>
 
         <div id="control" class="fadein">
             <button id="shareButton" class="hidden"><i class="fas fa-share-alt"></i></button>
             <button id="startRecButton" class="hidden"><i class="fas fa-record-vinyl"></i></button>
             <button id="stopRecButton" class="hidden"><i class="fas fa-record-vinyl cr"></i></button>
+            <button id="fullScreenButton" class="hidden"><i id="fullScreenIcon" class="fas fa-expand-alt"></i></button>
             <button id="emojiRoomButton" class="hidden"><i class="fas fa-face-smile"></i></button>
             <button id="chatButton" class="hidden"><i class="fas fa-comments"></i></button>
             <button id="transcriptionButton" class="hidden"><i class="fas fa-closed-captioning"></i></button>
@@ -189,8 +195,8 @@ access to use this app.
             <button id="whiteboardButton" class="hidden"><i class="fas fa-chalkboard-teacher"></i></button>
             <button id="snapshotRoomButton" class="hidden"><i class="fas fas fa-camera-retro"></i></button>
             <button id="settingsButton" class="hidden"><i class="fas fa-cogs"></i></button>
+            <button id="restartICEButton" class="hidden"><i class="fas fa-satellite-dish"></i></button>
             <button id="aboutButton" class="hidden"><i class="fas fa-question"></i></button>
-            <!-- <button id="restartICE" class="hidden"><i class="fas fa-satellite-dish"></i></button> -->
         </div>
 
         <div id="bottomButtons" class="fadein">
@@ -260,11 +266,6 @@ access to use this app.
 
                 <div class="tabActions">
                     <div id="tabRoom" class="tabcontent">
-                        <button id="fullScreenButton" class="hidden btn-custom">
-                            <i class="fas fa-expand-alt"></i>
-                            <p>Full screen mode</p>
-                        </button>
-                        <br />
                         <button id="fileShareButton" class="hidden btn-custom">
                             <i class="fas fa-folder-open"></i>
                             <p>File sharing</p>
@@ -382,15 +383,6 @@ access to use this app.
                             <p>Video Source:</p>
                         </div>
                         <select id="videoSelect" class="form-select text-light bg-dark"></select>
-                        <div id="VideoMirrorDiv">
-                            <div class="title">
-                                <i class="fas fa-arrow-right-arrow-left"></i>
-                                <p>Toggle mirror</p>
-                                <div class="form-check form-switch form-switch-md">
-                                    <input id="switchVideoMirror" class="form-check-input" type="checkbox" checked />
-                                </div>
-                            </div>
-                        </div>
                         <br />
                         <div class="title">
                             <i class="fas fa-palette"></i>
