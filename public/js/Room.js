@@ -11,7 +11,7 @@ if (location.href.substr(0, 5) !== 'https') location.href = 'https' + location.h
  * @license For commercial or closed source, contact us at license.mirotalk@gmail.com or purchase directly via CodeCanyon
  * @license CodeCanyon: https://codecanyon.net/item/mirotalk-sfu-webrtc-realtime-video-conferences/40769970
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.5.84
+ * @version 1.5.88
  *
  */
 
@@ -1372,6 +1372,7 @@ function roomIsReady() {
         if (navigator.getDisplayMedia || navigator.mediaDevices.getDisplayMedia) {
             if (BUTTONS.main.startScreenButton) {
                 show(startScreenButton);
+                show(ScreenQualityDiv);
                 show(ScreenFpsDiv);
             }
             BUTTONS.main.snapshotRoomButton && show(snapshotRoomButton);
@@ -2285,6 +2286,9 @@ function handleSelects() {
     };
     videoQuality.onchange = () => {
         rc.closeThenProduce(RoomClient.mediaType.video, videoSelect.value);
+    };
+    screenQuality.onchange = () => {
+        rc.closeThenProduce(RoomClient.mediaType.screen);
     };
     videoFps.onchange = () => {
         rc.closeThenProduce(RoomClient.mediaType.video, videoSelect.value);
@@ -3928,12 +3932,14 @@ function getParticipantsList(peers) {
 
     // CHAT-GPT
     if (chatGPT) {
+        const chatgpt_active = rc.chatPeerName === 'ChatGPT' ? ' active' : '';
+
         li = `
         <li 
             id="ChatGPT" 
             data-to-id="ChatGPT"
             data-to-name="ChatGPT"
-            class="clearfix" 
+            class="clearfix${chatgpt_active}" 
             onclick="rc.showPeerAboutAndMessages(this.id, 'ChatGPT', event)"
         >
             <img 
@@ -3947,12 +3953,14 @@ function getParticipantsList(peers) {
         </li>`;
     }
 
+    const public_chat_active = rc.chatPeerName === 'all' ? ' active' : '';
+
     // ALL
     li += `
     <li id="all"
         data-to-id="all"
         data-to-name="all"
-        class="clearfix active" 
+        class="clearfix${public_chat_active}" 
         onclick="rc.showPeerAboutAndMessages(this.id, 'all', event)"
     >
         <img 
@@ -4028,6 +4036,8 @@ function getParticipantsList(peers) {
         const peer_id = peer_info.peer_id;
         const avatarImg = getParticipantAvatar(peer_name);
 
+        const peer_chat_active = rc.chatPeerId === peer_id ? ' active' : '';
+
         // NOT ME
         if (socket.id !== peer_id) {
             // PRESENTER HAS MORE OPTIONS
@@ -4037,7 +4047,7 @@ function getParticipantsList(peers) {
                     id='${peer_id}'
                     data-to-id="${peer_id}" 
                     data-to-name="${peer_name}"
-                    class="clearfix" 
+                    class="clearfix${peer_chat_active}" 
                     onclick="rc.showPeerAboutAndMessages(this.id, '${peer_name}', event)"
                 >
                     <img
@@ -4113,7 +4123,7 @@ function getParticipantsList(peers) {
                     id='${peer_id}' 
                     data-to-id="${peer_id}"
                     data-to-name="${peer_name}"
-                    class="clearfix" 
+                    class="clearfix${peer_chat_active}" 
                     onclick="rc.showPeerAboutAndMessages(this.id, '${peer_name}', event)"
                 >
                 <img 
@@ -4490,7 +4500,7 @@ function showAbout() {
         imageUrl: image.about,
         customClass: { image: 'img-about' },
         position: 'center',
-        title: 'WebRTC SFU v1.5.84',
+        title: 'WebRTC SFU v1.5.88',
         html: `
         <br />
         <div id="about">
