@@ -75,6 +75,7 @@ class Transcription {
             ],
             ['日本語', ['ja-JP']],
             ['Lingua latīna', ['la']],
+            ['Tiếng Việt', ['vi-VN']],
         ];
         this.speechTranscription = window.SpeechRecognition || window.webkitSpeechRecognition;
         this.isTranscriptionSupported = false;
@@ -243,7 +244,13 @@ class Transcription {
             transcriptionRoom.style.display = 'none';
         }
         this.isHidden = !this.isHidden;
+
         if (this.isPinned) this.unpinned();
+
+        if (!rc.isMobileDevice && !this.isHidden && rc.canBePinned()) {
+            this.togglePinUnpin();
+        }
+
         resizeTranscriptionRoom();
     }
 
@@ -318,6 +325,7 @@ class Transcription {
         transcriptionRoom.style.transform = null;
         document.documentElement.style.setProperty('--transcription-width', '25%');
         document.documentElement.style.setProperty('--transcription-height', '100%');
+        rc.resizeVideoMenuBar();
     }
 
     unpinned() {
@@ -334,6 +342,7 @@ class Transcription {
         this.center();
         this.isPinned = false;
         setColor(transcriptionTogglePinBtn, 'white');
+        rc.resizeVideoMenuBar();
         resizeVideoMedia();
         resizeTranscriptionRoom();
         transcriptionRoom.style.resize = 'both';
@@ -405,6 +414,64 @@ class Transcription {
         transcriptionLanguage.onchange = () => {
             this.updateCountry();
         };
+    }
+
+    handleTranscriptionAll(cmd) {
+        const { peer_name, transcriptionLanguageIndex, transcriptionDialectIndex } = cmd.data;
+
+        if (!this.speechTranscription) {
+            hide(transcriptionFooter);
+            rc.msgPopup(
+                'info',
+                `${peer_name} wants to start transcriptions for this session, but your browser does not support it. Please use a Chromium-based browser like Google Chrome, Microsoft Edge, or Brave.`,
+            );
+            return;
+        }
+
+        if (this.transcriptionRunning || !BUTTONS.main.transcriptionButton) return;
+
+        Swal.fire({
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showDenyButton: true,
+            background: swalBackground,
+            position: 'center',
+            imageUrl: image.transcription,
+            title: 'Start Transcription',
+            text: `${peer_name} wants to start the transcriptions for this session. Would you like to enable them?`,
+            confirmButtonText: `Yes`,
+            denyButtonText: `No`,
+            showClass: { popup: 'animate__animated animate__fadeInDown' },
+            hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+        }).then((result) => {
+            if (result.isConfirmed) {
+                if (this.isHidden) {
+                    this.toggle();
+                }
+                if (!this.transcriptionRunning) {
+                    transcriptionLanguage.selectedIndex = transcriptionLanguageIndex;
+                    this.updateCountry();
+                    transcriptionDialect.selectedIndex = transcriptionDialectIndex;
+                    transcription.start();
+                }
+            }
+        });
+    }
+
+    startAll() {
+        if (!this.transcriptionRunning) {
+            transcription.start();
+        }
+        rc.emitCmd({
+            type: 'transcriptionAll',
+            broadcast: true,
+            data: {
+                peer_id: rc.peer_id,
+                peer_name: rc.peer_name,
+                transcriptionLanguageIndex: transcriptionLanguage.selectedIndex,
+                transcriptionDialectIndex: transcriptionDialect.selectedIndex,
+            },
+        });
     }
 
     start() {

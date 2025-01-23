@@ -23,9 +23,11 @@ let BUTTONS = {
         swapCameraButton: true,
         chatButton: true,
         pollButton: true,
+        editorButton: true,
         raiseHandButton: true,
         transcriptionButton: true,
         whiteboardButton: true,
+        documentPiPButton: true,
         snapshotRoomButton: true,
         emojiRoomButton: true,
         settingsButton: true,
@@ -45,6 +47,7 @@ let BUTTONS = {
         tabRecording: true,
         host_only_recording: true, // presenter
         pushToTalk: true,
+        keyboardShortcuts: true,
     },
     producerVideo: {
         videoPictureInPicture: true,
@@ -53,6 +56,7 @@ let BUTTONS = {
         snapShotButton: true,
         muteAudioButton: true,
         videoPrivacyButton: true,
+        audioVolumeInput: true,
     },
     consumerVideo: {
         videoPictureInPicture: true,
@@ -65,7 +69,7 @@ let BUTTONS = {
         sendVideoButton: true,
         muteVideoButton: true,
         muteAudioButton: true,
-        audioVolumeInput: true, // Disabled for mobile
+        audioVolumeInput: true,
         geolocationButton: true, // Presenter
         banButton: true, // presenter
         ejectButton: true, // presenter
@@ -75,7 +79,7 @@ let BUTTONS = {
         sendFileButton: true,
         sendVideoButton: true,
         muteAudioButton: true,
-        audioVolumeInput: true, // Disabled for mobile
+        audioVolumeInput: true,
         geolocationButton: true, // Presenter
         banButton: true, // presenter
         ejectButton: true, // presenter
@@ -98,7 +102,7 @@ let BUTTONS = {
         saveInfoButton: true, // presenter
         sendFileAllButton: true, // presenter
         ejectAllButton: true, // presenter
-        sendFileButton: false, // presenter & guests
+        sendFileButton: true, // presenter & guests
         geoLocationButton: true, // presenter
         banButton: true, // presenter
         ejectButton: true, // presenter
@@ -149,6 +153,7 @@ function handleRules(isPresenter) {
         BUTTONS.settings.sendEmailInvitation = true;
 
         show(editorUnlockBtn);
+        show(transcriptionAllLi);
         //...
 
         // ##################################
@@ -177,6 +182,7 @@ function handleRules(isPresenter) {
         switchEveryoneCantShareScreen.checked = localStorageSettings.moderator_screen_cant_share;
         switchEveryoneCantChatPrivately.checked = localStorageSettings.moderator_chat_cant_privately;
         switchEveryoneCantChatChatGPT.checked = localStorageSettings.moderator_chat_cant_chatgpt;
+        switchEveryoneCantMediaSharing.checked = localStorageSettings.moderator_media_cant_sharing;
         switchDisconnectAllOnLeave.checked = localStorageSettings.moderator_disconnect_all_on_leave;
 
         // Update moderator settings...
@@ -189,6 +195,7 @@ function handleRules(isPresenter) {
             screen_cant_share: switchEveryoneCantShareScreen.checked,
             chat_cant_privately: switchEveryoneCantChatPrivately.checked,
             chat_cant_chatgpt: switchEveryoneCantChatChatGPT.checked,
+            media_cant_sharing: switchEveryoneCantMediaSharing.checked,
         };
         console.log('Rules moderator data ---->', moderatorData);
         rc.updateRoomModeratorALL(moderatorData);
@@ -234,6 +241,7 @@ function handleRulesBroadcasting() {
     BUTTONS.main.swapCameraButton = false;
     //BUTTONS.main.raiseHandButton = false;
     BUTTONS.main.whiteboardButton = false;
+    BUTTONS.main.documentPiPButton = false;
     //BUTTONS.main.snapshotRoomButton = false;
     //BUTTONS.main.emojiRoomButton = false,
     //BUTTONS.main.pollButton = false;
@@ -269,6 +277,7 @@ function handleRulesBroadcasting() {
     elemDisplay('swapCameraButton', false);
     //elemDisplay('raiseHandButton', false);
     elemDisplay('whiteboardButton', false);
+    elemDisplay('documentPiPButton', false);
     //elemDisplay('snapshotRoomButton', false);
     //elemDisplay('emojiRoomButton', false);
     //elemDisplay('pollButton', false);

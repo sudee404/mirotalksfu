@@ -209,6 +209,10 @@ body {
     color: red;
 }
 
+#toggleExtraButton {
+    color: #66beff;
+}
+
 /*--------------------------------------------------------------
 # Bottom buttons
 --------------------------------------------------------------*/
@@ -245,6 +249,20 @@ body {
 #bottomButtons button:hover {
     transform: var(--btns-hover-scale);
     background: var(--body-bg) !important;
+}
+
+@media screen and (max-width: 500px) {
+    #bottomButtons button {
+        width: 36px;
+        font-size: 1rem;
+    }
+}
+
+@media screen and (max-width: 350px) {
+    #bottomButtons button {
+        width: 30px;
+        font-size: 0.6rem;
+    }
 }
 
 /*--------------------------------------------------------------
@@ -361,6 +379,13 @@ body {
     color: white;
 }
 
+/* Responsive adjustments */
+@media screen and (max-width: 500px) {
+    .title p {
+        font-size: 0.8em;
+    }
+}
+
 .inline-check-box {
     margin-bottom: 20px;
     display: inline-flex;
@@ -413,17 +438,19 @@ body {
     color: #fff;
     table-layout: fixed;
     border-collapse: collapse;
+    border-radius: 10px;
     border-style: hidden;
+    background: var(--body-bg);
 }
 .settingsTable td,
 th {
     text-align: left;
-    padding: 5px;
+    padding: 10px;
     /* border: 1px solid grey; */
 }
-.settingsTable tr:nth-child(even) {
-    /* background-color: #121212; */
-}
+/* .settingsTable tr:nth-child(even) {
+    background: var(--select-bg);
+} */
 .settingsTable i {
     border: none;
     border-radius: 5px;
@@ -440,6 +467,36 @@ th {
 
 .microphone-table-width {
     width: 180px;
+}
+
+/*--------------------------------------------------------------
+# Shortcut Table
+--------------------------------------------------------------*/
+
+#shortcutsTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 16px;
+    text-align: left;
+    color: #fff;
+    border-radius: 10px;
+    background: var(--body-bg);
+}
+#shortcutsTable th,
+#shortcutsTable td {
+    border: var(--border);
+    padding: 5px;
+}
+#shortcutsTable th {
+    background: var(--body-bg);
+    font-weight: bold;
+}
+#shortcutsTable td i {
+    color: #007bff;
+}
+#shortcutsTable tr:nth-child(even) {
+    background: var(--body-bg);
 }
 
 /*--------------------------------------------------------------
@@ -613,7 +670,7 @@ th {
     width: 65%;
     background-color: var(--body-bg);
     min-height: 480px;
-    max-height: 680px;
+    max-height: 768px;
     overflow-x: hidden;
     overflow-y: auto;
 }
@@ -693,9 +750,10 @@ th {
     display: block;
 }
 
+/* moderator title */
 .mod-title {
-    margin-top: 5px;
-    color: grey;
+    font-size: 1.1rem;
+    color: #c2c2c2;
 }
 
 /*--------------------------------------------------------------
@@ -1012,6 +1070,10 @@ th {
     background: var(--body-bg);
 }
 
+.swal2-timer-progress-bar {
+    background-color: #1d8ecd !important;
+}
+
 .img-about {
     margin: 0 !important;
 }
@@ -1068,7 +1130,8 @@ th {
 
 h1,
 h2,
-h3 {
+h3,
+h4 {
     color: #c2c2c2;
 }
 
@@ -1126,6 +1189,10 @@ button:hover {
 
 .red {
     color: red !important;
+}
+
+.orange {
+    color: orange !important;
 }
 
 .green {
@@ -1435,8 +1502,13 @@ hr {
 }
 
 .wa {
-    /* width: auto; */
-    width: 320px;
+    width: 260px;
+}
+
+@media screen and (max-width: 500px) {
+    .wa {
+        width: 220px;
+    }
 }
 
 .ml-5 {
@@ -1453,6 +1525,10 @@ hr {
 
 #initVideo {
     object-fit: contain;
+}
+
+.user-hand {
+    background: transparent !important;
 }
 
 /*--------------------------------------------------------------

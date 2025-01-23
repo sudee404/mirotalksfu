@@ -2,6 +2,25 @@
 
 const os = require('os');
 
+// #############################
+// HELPERS
+// #############################
+
+const platform = os.platform();
+
+function getFFmpegPath(platform) {
+    switch (platform) {
+        case 'darwin':
+            return '/usr/local/bin/ffmpeg'; // macOS
+        case 'linux':
+            return '/usr/bin/ffmpeg'; // Linux
+        case 'win32':
+            return 'C:\\ffmpeg\\bin\\ffmpeg.exe'; // Windows
+        default:
+            return '/usr/bin/ffmpeg'; // Centos or others...
+    }
+}
+
 // https://api.ipify.org
 
 function getIPv4() {
@@ -17,9 +36,33 @@ function getIPv4() {
     return '0.0.0.0'; // Default to 0.0.0.0 if no external IPv4 address found
 }
 
-const IPv4 = getIPv4(); // Replace it with the Server Public IPv4 in production.
+/*
+    IPv4 Configuration Guide:
+        1. Localhost Setup:
+            - For local development with Docker, replace `getIPv4()` with '127.0.0.1'.
+        2. Production Setup:
+            - Replace `getIPv4()` with the 'Public Static IPv4 Address' of the server hosting this application.
+            - For AWS EC2 instances, replace `getIPv4()` with the 'Elastic IP' associated with the instance. 
+            This ensures the public IP remains consistent across instance reboots.
+    Note: Always enclose the IP address in single quotes ''.
+*/
+const IPv4 = getIPv4(); // Replace with the appropriate IPv4 address for your environment.
+
+/*
+    Set the port range for WebRTC communication. This range is used for the dynamic allocation of UDP ports for media streams.
+        - Each participant requires 2 ports: one for audio and one for video.
+        - The default configuration supports up to 50 participants (50 * 2 ports = 100 ports).
+        - To support more participants, simply increase the port range.
+    Note: 
+    - When running in Docker, use 'network mode: host' for improved performance.
+    - Alternatively, enable 'webRtcServerActive: true' mode for better scalability.
+*/
+const rtcMinPort = 40000;
+const rtcMaxPort = 40100;
 
 const numWorkers = require('os').cpus().length;
+
+const ffmpegPath = getFFmpegPath(platform);
 
 module.exports = {
     console: {
@@ -31,6 +74,7 @@ module.exports = {
         colors: true,
     },
     server: {
+        hostUrl: '', // default to http://localhost:port
         listen: {
             // app listen on
             ip: '0.0.0.0',
@@ -76,7 +120,8 @@ module.exports = {
                 - apiSecret: The API secret for streaming WebRTC to RTMP through the MiroTalk API.
                 - expirationHours: The number of hours before the RTMP URL expires. Default is 4 hours.
                 - dir: Directory where your video files are stored to be streamed via RTMP.
-                - ffmpeg: Path of the ffmpeg installation on the system (which ffmpeg)
+                - ffmpegPath: Path of the ffmpeg installation on the system (which ffmpeg)
+                - platform: 'darwin', 'linux', 'win32', etc.
 
                 Important: Before proceeding, make sure your RTMP server is up and running. 
                 For more information, refer to the documentation here: https://docs.mirotalk.com/mirotalk-sfu/rtmp/.
@@ -97,7 +142,8 @@ module.exports = {
             apiSecret: 'mirotalkRtmpApiSecret',
             expirationHours: 4,
             dir: 'rtmp',
-            ffmpeg: '/usr/bin/ffmpeg',
+            ffmpegPath: ffmpegPath,
+            platform: platform,
         },
     },
     middleware: {
@@ -116,11 +162,13 @@ module.exports = {
         keySecret: 'mirotalksfu_default_secret',
         // Define which endpoints are allowed
         allowed: {
+            stats: true,
             meetings: false,
             meeting: true,
             join: true,
             token: false,
             slack: true,
+            mattermost: true,
             //...
         },
     },
@@ -143,6 +191,11 @@ module.exports = {
             For those seeking an open-source solution, check out: https://github.com/panva/node-oidc-provider
         */
         enabled: false,
+        peer_name: {
+            force: true, // Enforce using profile data for peer_name
+            email: true, // Use email as peer_name
+            name: false, // Don't use full name (family_name + given_name)
+        },
         config: {
             issuerBaseURL: 'https://server.example.com',
             baseURL: `http://localhost:${process.env.PORT ? process.env.PORT : 3010}`, // https://sfu.mirotalk.com
@@ -174,8 +227,12 @@ module.exports = {
         users_from_db: false, // if true ensure that api.token is also set to true.
         users_api_endpoint: 'http://localhost:9000/api/v1/user/isAuth',
         users_api_room_allowed: 'http://localhost:9000/api/v1/user/isRoomAllowed',
+        users_api_rooms_allowed: 'http://localhost:9000/api/v1/user/roomsAllowed',
+        api_room_exists: 'http://localhost:9000/api/v1/room/exists',
         //users_api_endpoint: 'https://webrtc.mirotalk.com/api/v1/user/isAuth',
         //users_api_room_allowed: 'https://webrtc.mirotalk.com/api/v1/user/isRoomAllowed',
+        //users_api_rooms_allowed: 'https://webrtc.mirotalk.com/api/v1/user/roomsAllowed',
+        //api_room_exists: 'https://webrtc.mirotalk.com//api/v1/room/exists',
         users_api_secret_key: 'mirotalkweb_default_secret',
         users: [
             {
@@ -269,6 +326,47 @@ module.exports = {
         DSN: '',
         tracesSampleRate: 0.5,
     },
+    webhook: {
+        /*
+            Enable or disable webhook functionality.
+            Set `enabled` to `true` to activate webhook sending of socket events (join, exitRoom, disconnect)
+        */
+        enabled: false,
+        url: 'https://your-site.com/webhook-endpoint',
+    },
+    mattermost: {
+        /*
+        Mattermost: https://mattermost.com
+            1. Navigate to Main Menu > Integrations > Slash Commands in Mattermost.
+            2. Click on Add Slash Command and configure the following settings:
+                - Title: Enter a descriptive title (e.g., `SFU Command`).
+                - Command Trigger Word: Set the trigger word to `sfu`.
+                - Callback URLs: Enter the URL for your Express server (e.g., `https://yourserver.com/mattermost`).
+                - Request Method: Select POST.
+                - Enable Autocomplete: Check the box for Autocomplete.
+                - Autocomplete Description: Provide a brief description (e.g., `Get MiroTalk SFU meeting room`).
+            3. Save the slash command and copy the generated token (YourMattermostToken).   
+        */
+        enabled: false,
+        serverUrl: 'YourMattermostServerUrl',
+        username: 'YourMattermostUsername',
+        password: 'YourMattermostPassword',
+        token: 'YourMattermostToken',
+        commands: [
+            {
+                name: '/sfu',
+                message: 'Here is your meeting room:',
+            },
+            //....
+        ],
+        texts: [
+            {
+                name: '/sfu',
+                message: 'Here is your meeting room:',
+            },
+            //....
+        ],
+    },
     slack: {
         /*
         Slack
@@ -279,6 +377,28 @@ module.exports = {
         */
         enabled: false,
         signingSecret: '',
+    },
+    discord: {
+        /*
+        Discord
+            1. Go to the Discord Developer Portal: https://discord.com/developers/.
+            2. Create a new application and name it whatever you like.
+            3. Under the Bot section, click Add Bot and confirm.
+            4. Copy your bot token (this will be used later).
+            5. Under OAuth2 -> URL Generator, select bot scope, and under Bot Permissions, select the permissions you need (e.g., Send Messages and Read Messages).
+            6. Copy the generated invite URL, open it in a browser, and invite the bot to your Discord server.
+            7. Add the Bot in the Server channel permissions
+            8. Type /sfu (commands.name) in the channel, the response will return a URL for the meeting
+        */
+        enabled: false,
+        token: '',
+        commands: [
+            {
+                name: '/sfu',
+                message: 'Here is your SFU meeting room:',
+                baseUrl: 'https://sfu.mirotalk.com/join/',
+            },
+        ],
     },
     IPLookup: {
         /*
@@ -312,6 +432,7 @@ module.exports = {
     ui: {
         /*
             Customize your MiroTalk instance
+            Branding and customizations require a license: https://codecanyon.net/item/mirotalk-sfu-webrtc-realtime-video-conferences/40769970
         */
         brand: {
             app: {
@@ -367,6 +488,7 @@ module.exports = {
                 raiseHandButton: true,
                 transcriptionButton: true,
                 whiteboardButton: true,
+                documentPiPButton: true,
                 snapshotRoomButton: true,
                 emojiRoomButton: true,
                 settingsButton: true,
@@ -386,6 +508,7 @@ module.exports = {
                 tabRecording: true,
                 host_only_recording: true, // presenter
                 pushToTalk: true,
+                keyboardShortcuts: true,
             },
             producerVideo: {
                 videoPictureInPicture: true,
@@ -394,6 +517,7 @@ module.exports = {
                 snapShotButton: true,
                 muteAudioButton: true,
                 videoPrivacyButton: true,
+                audioVolumeInput: true,
             },
             consumerVideo: {
                 videoPictureInPicture: true,
@@ -406,7 +530,7 @@ module.exports = {
                 sendVideoButton: true,
                 muteVideoButton: true,
                 muteAudioButton: true,
-                audioVolumeInput: true, // Disabled for mobile
+                audioVolumeInput: true,
                 geolocationButton: true, // Presenter
                 banButton: true, // presenter
                 ejectButton: true, // presenter
@@ -416,7 +540,7 @@ module.exports = {
                 sendFileButton: true,
                 sendVideoButton: true,
                 muteAudioButton: true,
-                audioVolumeInput: true, // Disabled for mobile
+                audioVolumeInput: true,
                 geolocationButton: true, // Presenter
                 banButton: true, // presenter
                 ejectButton: true, // presenter
@@ -463,8 +587,8 @@ module.exports = {
         // Worker settings
         numWorkers: numWorkers,
         worker: {
-            rtcMinPort: 40000,
-            rtcMaxPort: 40100,
+            rtcMinPort: rtcMinPort,
+            rtcMaxPort: rtcMaxPort,
             disableLiburing: false, // https://github.com/axboe/liburing
             logLevel: 'error',
             logTags: ['info', 'ice', 'dtls', 'rtp', 'srtp', 'rtcp', 'rtx', 'bwe', 'score', 'simulcast', 'svc', 'sctp'],
@@ -493,7 +617,16 @@ module.exports = {
                     mimeType: 'video/VP9',
                     clockRate: 90000,
                     parameters: {
-                        'profile-id': 2,
+                        'profile-id': 0, // Default profile for wider compatibility
+                        'x-google-start-bitrate': 1000,
+                    },
+                },
+                {
+                    kind: 'video',
+                    mimeType: 'video/VP9',
+                    clockRate: 90000,
+                    parameters: {
+                        'profile-id': 2, // High profile for modern devices
                         'x-google-start-bitrate': 1000,
                     },
                 },
@@ -503,7 +636,7 @@ module.exports = {
                     clockRate: 90000,
                     parameters: {
                         'packetization-mode': 1,
-                        'profile-level-id': '4d0032',
+                        'profile-level-id': '42e01f', // Baseline profile for compatibility
                         'level-asymmetry-allowed': 1,
                         'x-google-start-bitrate': 1000,
                     },
@@ -514,7 +647,7 @@ module.exports = {
                     clockRate: 90000,
                     parameters: {
                         'packetization-mode': 1,
-                        'profile-level-id': '42e01f',
+                        'profile-level-id': '4d0032', // High profile for modern devices
                         'level-asymmetry-allowed': 1,
                         'x-google-start-bitrate': 1000,
                     },
@@ -525,38 +658,38 @@ module.exports = {
         webRtcServerActive: false,
         webRtcServerOptions: {
             listenInfos: [
-                // { protocol: 'udp', ip: '0.0.0.0', announcedAddress: IPv4, port: 40000 },
-                // { protocol: 'tcp', ip: '0.0.0.0', announcedAddress: IPv4, port: 40000 },
+                // { protocol: 'udp', ip: '0.0.0.0', announcedAddress: IPv4, port: rtcMinPort },
+                // { protocol: 'tcp', ip: '0.0.0.0', announcedAddress: IPv4, port: rtcMinPort },
                 {
                     protocol: 'udp',
                     ip: '0.0.0.0',
                     announcedAddress: IPv4,
-                    portRange: { min: 40000, max: 40000 + numWorkers },
+                    portRange: { min: rtcMinPort, max: rtcMinPort + numWorkers },
                 },
                 {
                     protocol: 'tcp',
                     ip: '0.0.0.0',
                     announcedAddress: IPv4,
-                    portRange: { min: 40000, max: 40000 + numWorkers },
+                    portRange: { min: rtcMinPort, max: rtcMinPort + numWorkers },
                 },
             ],
         },
         // WebRtcTransportOptions
         webRtcTransport: {
             listenInfos: [
-                // { protocol: 'udp', ip: IPv4, portRange: { min: 40000, max: 40100 } },
-                // { protocol: 'tcp', ip: IPv4, portRange: { min: 40000, max: 40100 } },
+                // { protocol: 'udp', ip: IPv4, portRange: { min: rtcMinPort, max: rtcMaxPort } },
+                // { protocol: 'tcp', ip: IPv4, portRange: { min: rtcMinPort, max: rtcMaxPort } },
                 {
                     protocol: 'udp',
                     ip: '0.0.0.0',
                     announcedAddress: IPv4,
-                    portRange: { min: 40000, max: 40100 },
+                    portRange: { min: rtcMinPort, max: rtcMaxPort },
                 },
                 {
                     protocol: 'tcp',
                     ip: '0.0.0.0',
                     announcedAddress: IPv4,
-                    portRange: { min: 40000, max: 40100 },
+                    portRange: { min: rtcMinPort, max: rtcMaxPort },
                 },
             ],
             initialAvailableOutgoingBitrate: 1000000,
@@ -564,7 +697,5 @@ module.exports = {
             maxSctpMessageSize: 262144,
             maxIncomingBitrate: 1500000,
         },
-        //announcedAddress: replace by 'public static IPV4 address' https://api.ipify.org (type string --> 'xx.xxx.xxx.xx' not xx.xxx.xxx.xx)
-        //announcedAddress: '' will be auto-detected on server start, for docker localPC set '127.0.0.1' otherwise the 'public static IPV4 address'
     },
 };

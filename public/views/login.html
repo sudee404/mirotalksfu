@@ -42,6 +42,24 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,600" />
         <link rel="stylesheet" type="text/css" href="../css/landing.css" />
 
+        <!-- Bootstrap 5 -->
+
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+            crossorigin="anonymous"
+        />
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+            crossorigin="anonymous"
+        ></script>
+
+        <!-- https://animate.style 4 using for swal fadeIn-Out -->
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
         <!-- Js scripts -->
 
         <script defer src="../js/Brand.js"></script>
@@ -51,36 +69,20 @@
         <script src="https://unpkg.com/scrollreveal@4.0.0/dist/scrollreveal.min.js"></script>
 
         <!-- xss -->
-
         <script src="https://cdn.jsdelivr.net/npm/xss/dist/xss.min.js"></script>
 
         <!-- axios -->
-
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+        <!-- sweetalert -->
+        <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.8"></script>
     </head>
     <body class="is-boxed has-animations">
         <div class="body-wrap">
             <header class="site-header">
                 <div class="container">
                     <div class="site-header-inner">
-                        <div class="brand header-brand">
-                            <h1 class="m-0">
-                                <a href="/">
-                                    <img
-                                        class="header-logo-image"
-                                        src="../images/logo.svg"
-                                        alt="mirotalksfu-webrtc-logo"
-                                    />
-                                    <!-- <img
-                                        class="header-logo-image reveal-from-left"
-                                        src="../images/mirotalk-mc.png"
-                                        alt="mirotalksfu-webrtc-logo"
-                                        width="96"
-                                        height="auto"
-                                    /> -->
-                                </a>
-                            </h1>
-                        </div>
+                        <div class="brand header-brand"></div>
                     </div>
                 </div>
             </header>
@@ -119,6 +121,25 @@
                                         </button>
                                     </div>
                                 </div>
+                                <!-- Join Room Section hidden -->
+                                <div id="joinRoomForm" class="mb-12">
+                                    <div class="hero-copy reveal-from-bottom">
+                                        <h1 class="hero-title mt-0">
+                                            Pick name. <br />
+                                            Share URL. <br />
+                                            Start conference.
+                                        </h1>
+                                    </div>
+                                    <br />
+                                    <div class="mb-12">
+                                        <select id="selectRoom" class="form-select text-light bg-dark"></select>
+                                    </div>
+                                    <div class="mt-24 mb-32">
+                                        <button id="joinSelectRoomButton" class="button button-primary button-block">
+                                            JOIN ROOM
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                             <div class="hero-figure anime-element">
                                 <svg class="placeholder" width="528" height="396" viewBox="0 0 528 396">
@@ -143,17 +164,16 @@
             <footer id="footer" class="site-footer">
                 <div class="container">
                     <div class="site-footer-inner">
-                        <div class="brand footer-brand">
-                            <a href="/">
-                                <img class="header-logo-image" src="../images/logo.svg" alt="Logo" />
-                            </a>
-                        </div>
+                        <div class="brand footer-brand"></div>
                         <ul class="footer-links list-reset">
                             <li>
                                 <a href="/about">About</a>
                             </li>
                             <li>
                                 <a href="/privacy">Privacy Policy</a>
+                            </li>
+                            <li>
+                                <a href="https://sfu.mirotalk.com/api/v1/docs/">Rest API</a>
                             </li>
                             <li>
                                 Contact:
@@ -229,12 +249,13 @@
                                 >
                             </li>
                         </ul>
-                        <div class="footer-copyright">&copy; 2024 MiroTalk SFU, all rights reserved</div>
+                        <div class="footer-copyright">&copy; 2025 MiroTalk SFU, all rights reserved</div>
                     </div>
                 </div>
             </footer>
         </div>
 
+        <script defer src="../js/Utils.js"></script>
         <script defer src="../js/Login.js"></script>
         <script defer src="../js/Landing.js"></script>
         <script async defer src="https://buttons.github.io/buttons.js"></script>

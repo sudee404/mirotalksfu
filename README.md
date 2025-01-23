@@ -4,9 +4,11 @@
 
 <div align="center">
 
-<a href="">[![Author](https://img.shields.io/badge/Author-miroslav-brightgreen.svg)](https://www.linkedin.com/in/miroslav-pejic-976a07101/)</a>
-<a href="">![License: AGPLv3](https://img.shields.io/badge/License-AGPLv3-blue.svg)</a>
-<a href="">[![Community](https://img.shields.io/badge/Community-forum-pink.svg)](https://discord.gg/rgGYfeYW3N)</a>
+<a href="https://www.linkedin.com/in/miroslav-pejic-976a07101/">![Author](https://img.shields.io/badge/Author-Miroslav_Pejic-brightgreen.svg)</a>
+<a href="https://choosealicense.com/licenses/agpl-3.0/">![License: AGPLv3](https://img.shields.io/badge/License-AGPLv3_Open_Surce-blue.svg)</a>
+<a href="https://codecanyon.net/item/mirotalk-sfu-webrtc-realtime-video-conferences/40769970">![License: Regular](https://img.shields.io/badge/License-Regular_Private_Use-lightblue.svg)</a>
+<a href="https://codecanyon.net/item/mirotalk-sfu-webrtc-realtime-video-conferences/40769970">![License: Extended](https://img.shields.io/badge/License-Extended_Commercial_Use-darkgreen.svg)</a>
+<a href="https://discord.gg/rgGYfeYW3N">![Community](https://img.shields.io/badge/Community-forum-pink.svg)</a>
 
 </div>
 
@@ -39,48 +41,51 @@
 
 <br/>
 
--   Is `100% Free` - `Open Source (AGPLv3)` - `Self Hosted` and [PWA](https://en.wikipedia.org/wiki/Progressive_web_application)!
--   Unlimited conference rooms with no time limitations.
--   Live broadcasting streaming.
--   Translated into 133 languages.
--   Support for the OpenID Connect (OIDC) authentication layer.
--   Host protection to prevent unauthorized access.
--   User auth to prevent unauthorized access.
--   JWT.io securely manages credentials for host configurations and user authentication, enhancing security and streamlining processes.
--   Room password protection.
--   Room lobby, central gathering space.
--   Room spam mitigations, focused on preventing spam.
--   Geolocation, identification or estimation of the real-world geographic location of the participants.
--   Compatible with desktop and mobile devices.
--   Optimized mobile room URL sharing.
--   Webcam streaming with front and rear camera support for mobile devices.
--   Broadcasting, distribution of audio or video content to a wide audience.
--   Crystal-clear audio streaming with speaking detection and volume indicators.
--   Screen sharing for presentations.
--   File sharing with drag-and-drop support.
--   Choose your audio input, output, and video source.
--   Supports video quality up to 4K.
--   Supports advance Picture-in-Picture (PiP) offering a more streamlined and flexible viewing experience.
--   Record your screen, audio, and video locally or on your Server.
--   Snapshot video frames and save them as PNG images.
--   Chat with an Emoji Picker for expressing feelings, private messages, Markdown support, and conversation saving.
--   ChatGPT (powered by OpenAI) for answering questions, providing information, and connecting users to relevant resources.
--   VideoAI enables users to customize AI avatars to deliver messages, perform tasks, or act out scripts.
--   Speech recognition, execute the app features simply with your voice.
--   Push-to-talk functionality, similar to a walkie-talkie.
--   Advanced collaborative whiteboard for teachers.
--   Advanced collaborative powerful rich text editor.
--   Real-time sharing of YouTube embed videos, video files (MP4, WebM, OGG), and audio files (MP3).
--   Real-time polls, allows users to create and participate in live polls, providing instant feedback and results.
--   Integrated RTMP server, fully compatible with **[OBS](https://obsproject.com)**.
--   Supports RTMP streaming from files, URLs, webcams, screens, and windows.
--   Full-screen mode with one-click video element zooming and pin/unpin.
--   Customizable UI themes.
--   Right-click options on video elements for additional controls.
--   Supports [REST API](app/api/README.md) (Application Programming Interface).
--   Integration with [Slack](https://api.slack.com/apps/) for enhanced communication.
--   Utilizes [Sentry](https://sentry.io/) for error reporting.
--   And much more...
+- Is `100% Free` - `Open Source (AGPLv3)` - `Self Hosted` and [PWA](https://en.wikipedia.org/wiki/Progressive_web_application)!
+- Unlimited conference rooms with no time limitations.
+- Live broadcasting streaming.
+- Translated into 133 languages.
+- Support for the OpenID Connect (OIDC) authentication layer.
+- Host protection to prevent unauthorized access.
+- User auth to prevent unauthorized access.
+- JWT.io securely manages credentials for host configurations and user authentication, enhancing security and streamlining processes.
+- Room password protection.
+- Room lobby, central gathering space.
+- Room spam mitigations, focused on preventing spam.
+- Geolocation, identification or estimation of the real-world geographic location of the participants.
+- Compatible with desktop and mobile devices.
+- Optimized mobile room URL sharing.
+- Webcam streaming with front and rear camera support for mobile devices.
+- Broadcasting, distribution of audio or video content to a wide audience.
+- Crystal-clear audio streaming with speaking detection and volume indicators.
+- Screen sharing for presentations.
+- File sharing with drag-and-drop support.
+- Choose your audio input, output, and video source.
+- Supports video quality up to 4K.
+- Supports advance Video/Document Picture-in-Picture (PiP) offering a more streamlined and flexible viewing experience.
+- Record your screen, audio, and video locally or on your Server.
+- Snapshot video frames and save them as PNG images.
+- Chat with an Emoji Picker for expressing feelings, private messages, Markdown support, and conversation saving.
+- ChatGPT (powered by OpenAI) for answering questions, providing information, and connecting users to relevant resources.
+- VideoAI enables users to customize AI avatars to deliver messages, perform tasks, or act out scripts.
+- Speech recognition, execute the app features simply with your voice.
+- Push-to-talk functionality, similar to a walkie-talkie.
+- Advanced collaborative whiteboard for teachers.
+- Advanced collaborative powerful rich text editor.
+- Real-time sharing of YouTube embed videos, video files (MP4, WebM, OGG), and audio files (MP3).
+- Real-time polls, allows users to create and participate in live polls, providing instant feedback and results.
+- Meeting Duration (HH:MM:SS): Set the meeting time in hours, minutes, and seconds for precise duration control.
+- Integrated RTMP server, fully compatible with **[OBS](https://obsproject.com)**.
+- Supports RTMP streaming from files, URLs, webcams, screens, and windows.
+- Full-screen mode with one-click video element zooming and pin/unpin.
+- Customizable UI themes.
+- Right-click options on video elements for additional controls.
+- Supports [REST API](app/api/README.md) (Application Programming Interface).
+- Integration with [Slack](https://api.slack.com/apps/) for enhanced communication.
+- Integration with [Discord](https://discord.com) for enhanced communication.
+- Integration with [Mattermost](https://mattermost.com/) for enhanced communication.
+- Utilizes [Sentry](https://sentry.io/) for error reporting.
+- And much more...
 
 </details>
 
@@ -89,8 +94,8 @@
 
 <br>
 
--   [Presentation](https://www.canva.com/design/DAE693uLOIU/view)
--   [Video Overview](https://www.youtube.com/watch?v=_IVn2aINYww)
+- [Presentation](https://www.canva.com/design/DAE693uLOIU/view)
+- [Video Overview](https://www.youtube.com/watch?v=_IVn2aINYww)
 
 </details>
 
@@ -99,20 +104,21 @@
 
 <br/>
 
--   You can `directly join a room` by using link like:
--   https://sfu.mirotalk.com/join?room=test&roomPassword=0&name=mirotalksfu&audio=0&video=0&screen=0&notify=0
+- You can `directly join a room` by using link like:
+- https://sfu.mirotalk.com/join?room=test&roomPassword=0&name=mirotalksfu&audio=0&video=0&screen=0&notify=0&duration=unlimited
 
-    | Params       | Type           | Description     |
-    | ------------ | -------------- | --------------- |
-    | room         | string         | Room Id         |
-    | roomPassword | string/boolean | Room password   |
-    | name         | string         | User name       |
-    | audio        | boolean        | Audio stream    |
-    | video        | boolean        | Video stream    |
-    | screen       | boolean        | Screen stream   |
-    | notify       | boolean        | Welcome message |
-    | hide         | boolean        | Hide myself     |
-    | token        | string         | JWT             |
+    | Params       | Type           | Description               |
+    | ------------ | -------------- | ------------------------- |
+    | room         | string         | Room Id                   |
+    | roomPassword | string/boolean | Room password             |
+    | name         | string         | User name                 |
+    | audio        | boolean        | Audio stream              |
+    | video        | boolean        | Video stream              |
+    | screen       | boolean        | Screen stream             |
+    | notify       | boolean        | Welcome message           |
+    | hide         | boolean        | Hide myself               |
+    | duration     | string         | Meeting duration HH:MM:SS |
+    | token        | string         | JWT                       |
 
 </details>
 
@@ -139,10 +145,14 @@ Example:
             {
                 username: 'username',
                 password: 'password',
+                displayname: 'displayname',
+                allowed_rooms: ['*'],
             },
             {
                 username: 'username2',
                 password: 'password2',
+                displayname: 'displayname2',
+                allowed_rooms: ['room1', 'room2'],
             },
             //...
         ],
@@ -152,30 +162,13 @@ Example:
 </details>
 
 <details open>
-<summary>Embed a meeting</summary>
-
-<br/>
-
-To embed a meeting within `your service or app` using an iframe, you can use the following code:
-
-```html
-<iframe
-    allow="camera; microphone; display-capture; fullscreen; clipboard-read; clipboard-write; web-share; autoplay"
-    src="https://sfu.mirotalk.com/newroom"
-    style="height: 100vh; width: 100vw; border: 0px;"
-></iframe>
-```
-
-</details>
-
-<details open>
 <summary>Quick Start</summary>
 
 <br/>
 
--   Before running MiroTalk SFU, ensure you have `Node.js` and all [requirements](https://mediasoup.org/documentation/v3/mediasoup/installation/#requirements) installed. This project has been tested with Node version [18.X](https://nodejs.org/en/download).
+- Before running MiroTalk SFU, ensure you have `Node.js` and all [requirements](https://mediasoup.org/documentation/v3/mediasoup/installation/#requirements) installed. This project has been tested with Node version [18.X](https://nodejs.org/en/download).
 
--   Requirements install example for `Ubuntu 24.04 LTS`
+- Requirements install example for `Ubuntu 24.04 LTS`
 
 ```bash
 # Gcc g++ make
@@ -193,11 +186,13 @@ $ apt install -y ffmpeg
 
 ---
 
+![nodejs](public/images/nodejs.png)
+
 Install `NodeJS 18.X` and `npm` using [Node Version Manager](https://docs.mirotalk.com/nvm/nvm/)
 
 ---
 
--   Start the server
+- Start the server
 
 ```bash
 # Clone this repo
@@ -214,7 +209,7 @@ $ npm start
 $ PORT=3011 npm start
 ```
 
--   Open [https://localhost:3010](https://localhost:3010) or `:3011` if the default port has been changed in your browser.
+- Open [https://localhost:3010](https://localhost:3010) or `:3011` if the default port has been changed in your browser.
 
 <br/>
 
@@ -231,8 +226,8 @@ $ PORT=3011 npm start
 
 ![docker](public/images/docker.png)
 
--   Repository [docker hub](https://hub.docker.com/r/mirotalk/sfu)
--   Install [docker engine](https://docs.docker.com/engine/install/) and [docker compose](https://docs.docker.com/compose/install/)
+- Repository [docker hub](https://hub.docker.com/r/mirotalk/sfu)
+- Install [docker engine](https://docs.docker.com/engine/install/) and [docker compose](https://docs.docker.com/compose/install/)
 
 ```bash
 # Clone this repo
@@ -251,7 +246,26 @@ $ docker-compose up # -d
 $ docker-compose down
 ```
 
--   Open [https://localhost:3010](https://localhost:3010) in your browser.
+- Open [https://localhost:3010](https://localhost:3010) in your browser.
+
+</details>
+
+<details open>
+<summary>Embed a meeting</summary>
+
+<br/>
+
+![iframe](public/images/iframe.png)
+
+To embed a meeting within `your service or app` using an iframe, you can use the following code:
+
+```html
+<iframe
+    allow="camera; microphone; display-capture; fullscreen; clipboard-read; clipboard-write; web-share; autoplay"
+    src="https://sfu.mirotalk.com/newroom"
+    style="height: 100vh; width: 100vw; border: 0px;"
+></iframe>
+```
 
 </details>
 
@@ -260,13 +274,16 @@ $ docker-compose down
 
 <br>
 
--   `Ngrok/HTTPS:` You can start a video conference directly from your local PC and make it accessible from any device outside your network by following [these instructions](docs/ngrok.md), or expose it directly on [HTTPS](app/ssl/README.md).
+- `Ngrok/HTTPS:` You can start a video conference directly from your local PC and make it accessible from any device outside your network by following [these instructions](docs/ngrok.md), or expose it directly on [HTTPS](app/ssl/README.md).
 
--   `Self-hosting:` For `self-hosting MiroTalk SFU` on your own dedicated server, please refer to [this comprehensive guide](docs/self-hosting.md). It will provide you with all the necessary instructions to get your MiroTalk SFU instance up and running smoothly.
+- `Self-hosting:` For `self-hosting MiroTalk SFU` on your own dedicated server, please refer to [this comprehensive guide](docs/self-hosting.md). It will provide you with all the necessary instructions to get your MiroTalk SFU instance up and running smoothly.
 
--   `Rest API:` The [API documentation](https://docs.mirotalk.com/mirotalk-sfu/api/) uses [swagger](https://swagger.io/) at https://localhost:3010/api/v1/docs or check it on live [here](https://sfu.mirotalk.com/api/v1/docs).
+- `Rest API:` The [API documentation](https://docs.mirotalk.com/mirotalk-sfu/api/) uses [swagger](https://swagger.io/) at https://localhost:3010/api/v1/docs or check it on live [here](https://sfu.mirotalk.com/api/v1/docs).
 
 ```bash
+# The response will give you the total of rooms and users.
+$ curl -X GET "http://localhost:3010/api/v1/stats" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json"
+$ curl -X GET "https://sfu.mirotalk.com/api/v1/stats" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json"
 # The response will give you the active meetings (default disabled).
 $ curl -X GET "http://localhost:3010/api/v1/meetings" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json"
 $ curl -X GET "https://sfu.mirotalk.com/api/v1/meetings" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json"
@@ -274,11 +291,11 @@ $ curl -X GET "https://sfu.mirotalk.com/api/v1/meetings" -H "authorization: miro
 $ curl -X POST "http://localhost:3010/api/v1/meeting" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json"
 $ curl -X POST "https://sfu.mirotalk.com/api/v1/meeting" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json"
 # The response will give you a entrypoint / URL for the direct join to the meeting.
-$ curl -X POST "http://localhost:3010/api/v1/join" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json" --data '{"room":"test","roomPassword":"false","name":"mirotalksfu","audio":"false","video":"false","screen":"false","notify":"false"}'
-$ curl -X POST "https://sfu.mirotalk.com/api/v1/join" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json" --data '{"room":"test","roomPassword":"false","name":"mirotalksfu","audio":"false","video":"false","screen":"false","notify":"false"}'
+$ curl -X POST "http://localhost:3010/api/v1/join" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json" --data '{"room":"test","roomPassword":"false","name":"mirotalksfu","audio":"false","video":"false","screen":"false","notify":"false","duration":"unlimited"}'
+$ curl -X POST "https://sfu.mirotalk.com/api/v1/join" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json" --data '{"room":"test","roomPassword":"false","name":"mirotalksfu","audio":"false","video":"false","screen":"false","notify":"false","duration":"unlimited"}'
 # The response will give you a entrypoint / URL for the direct join to the meeting with a token.
-$ curl -X POST "http://localhost:3010/api/v1/join" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json" --data '{"room":"test","roomPassword":"false","name":"mirotalksfu","audio":"false","video":"false","screen":"false","notify":"false","token":{"username":"username","password":"password","presenter":"true", "expire":"1h"}}'
-$ curl -X POST "https://sfu.mirotalk.com/api/v1/join" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json" --data '{"room":"test","roomPassword":"false","name":"mirotalksfu","audio":"false","video":"false","screen":"false","notify":"false","token":{"username":"username","password":"password","presenter":"true", "expire":"1h"}}'
+$ curl -X POST "http://localhost:3010/api/v1/join" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json" --data '{"room":"test","roomPassword":"false","name":"mirotalksfu","audio":"false","video":"false","screen":"false","notify":"false","duration":"unlimited","token":{"username":"username","password":"password","presenter":"true", "expire":"1h"}}'
+$ curl -X POST "https://sfu.mirotalk.com/api/v1/join" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json" --data '{"room":"test","roomPassword":"false","name":"mirotalksfu","audio":"false","video":"false","screen":"false","notify":"false","duration":"unlimited","token":{"username":"username","password":"password","presenter":"true", "expire":"1h"}}'
 # The response will give you a valid token for a meeting (default diabled)
 $ curl -X POST "http://localhost:3010/api/v1/token" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json" --data '{"username":"username","password":"password","presenter":"true", "expire":"1h"}'
 $ curl -X POST "https://sfu.mirotalk.com/api/v1/token" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json" --data '{"username":"username","password":"password","presenter":"true", "expire":"1h"}'
@@ -312,17 +329,6 @@ To set up your own instance of `MiroTalk SFU` on a dedicated cloud server, pleas
 </details>
 
 <details>
-<summary>DigitalOcean</summary>
-
-<br/>
-
-[![DigitalOcean Referral Badge](https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%201.svg)](https://m.do.co/c/1070207afbb1)
-
-For personal use, you can start with a single $5 a month cloud server and scale up as needed. You can use [this link](https://m.do.co/c/1070207afbb1) to get a `$200 credit for the first 60 days`.
-
-</details>
-
-<details>
 <summary>Live Demo</summary>
 
 <br/>
@@ -340,9 +346,9 @@ https://sfu.mirotalk.com
 
 <br/>
 
--   [Davide Pacilio](https://cruip.com/demos/solid/) (html template)
--   [Dirk Vanbeveren](https://github.com/Dirvann) (sfu logic)
--   [Mediasoup](https://mediasoup.org) (sfu server)
+- [Davide Pacilio](https://cruip.com/demos/solid/) (html template)
+- [Dirk Vanbeveren](https://github.com/Dirvann) (sfu logic)
+- [Mediasoup](https://mediasoup.org) (sfu server)
 
 </details>
 
@@ -351,8 +357,8 @@ https://sfu.mirotalk.com
 
 <br/>
 
--   Contributions are welcome and greatly appreciated!
--   Just run before `npm run lint`
+- Contributions are welcome and greatly appreciated!
+- Just run before `npm run lint`
 
 </details>
 
@@ -376,12 +382,13 @@ To obtain a [MiroTalk SFU license](https://docs.mirotalk.com/license/licensing-o
 
 Do you find MiroTalk SFU indispensable for your needs? Join us in supporting this transformative project by [becoming a backer or sponsor](https://github.com/sponsors/miroslavpejic85). By doing so, not only will your logo prominently feature here, but you'll also drive the growth and sustainability of MiroTalk SFU. Your support is vital in ensuring that this valuable platform continues to thrive and remain accessible for all. Make an impact – back MiroTalk SFU today and be part of this exciting journey!
 
-|                                                                                   |                                                                                        |
-| --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| [![BroadcastX](public/sponsors/BroadcastX.png)](https://broadcastx.de/)           | [![Hetzner](public/sponsors/HetznerLogo.png)](https://hetzner.cloud/?ref=XdRifCzCK3bn) |
-| [![LuvLounge](public/sponsors/LuvLounge.png)](https://luvlounge.ca)               | [![QuestionPro](public/sponsors/QuestionPro.png)](https://www.questionpro.com)         |
-| [![BrowserStack](public/sponsors/BrowserStack.png)](https://www.browserstack.com) | [![CrystalSound](public/sponsors/CrystalSound.png)](https://crystalsound.ai)           |
-| [![Cloudron](public/sponsors/Cloudron.png)](https://cloudron.io)                  | [![Kiquix](public/sponsors/KiquixLogo.png)](https://kiquix.com)                        |
+|                                                                                                                           |                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [![BroadcastX](public/sponsors/BroadcastX.png)](https://broadcastx.de/)                                                   | [![Hetzner](public/sponsors/HetznerLogo.png)](https://hetzner.cloud/?ref=XdRifCzCK3bn) |
+| [![LuvLounge](public/sponsors/LuvLounge.png)](https://luvlounge.ca)                                                       | [![QuestionPro](public/sponsors/QuestionPro.png)](https://www.questionpro.com)         |
+| [![BrowserStack](public/sponsors/BrowserStack.png)](https://www.browserstack.com)                                         | [![CrystalSound](public/sponsors/CrystalSound.png)](https://crystalsound.ai)           |
+| [![Cloudron](public/sponsors/Cloudron.png)](https://cloudron.io)                                                          | [![Kiquix](public/sponsors/KiquixLogo.png)](https://kiquix.com)                        |
+| [![LambdaTest](public/sponsors/LambdaTest.png)](https://lambdatest.com/pricing?coupon=QURFODlQUk9NT1RFUg==&refid=1149848) |                                                                                        |
 
 </details>
 

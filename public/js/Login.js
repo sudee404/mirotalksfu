@@ -4,7 +4,12 @@ console.log(window.location);
 
 const usernameInput = document.getElementById('username');
 const passwordInput = document.getElementById('password');
+const loginForm = document.getElementById('loginForm');
 const loginBtn = document.getElementById('loginButton');
+
+const joinRoomForm = document.getElementById('joinRoomForm');
+const selectRoom = document.getElementById('selectRoom');
+const joinSelectRoomBtn = document.getElementById('joinSelectRoomButton');
 
 usernameInput.onkeyup = (e) => {
     if (e.keyCode === 13) {
@@ -23,6 +28,10 @@ loginBtn.onclick = (e) => {
     login();
 };
 
+joinSelectRoomBtn.onclick = (e) => {
+    join();
+};
+
 function login() {
     const username = filterXSS(document.getElementById('username').value);
     const password = filterXSS(document.getElementById('password').value);
@@ -35,7 +44,7 @@ function login() {
 
     // http://localhost:3010/join/test
     const pathParts = window.location.pathname.split('/');
-    const roomPath = pathParts[pathParts.length - 1];
+    const roomPath = filterXSS(pathParts[pathParts.length - 1]);
 
     if (username && password) {
         axios
@@ -50,6 +59,21 @@ function login() {
                 const token = response.data.message;
                 window.sessionStorage.peer_token = token;
 
+                // Allowed rooms
+                const allowedRooms = response.data.allowedRooms;
+                if (allowedRooms && !allowedRooms.includes('*')) {
+                    console.log('User detected with limited join room access!', allowedRooms);
+                    loginForm.style.display = 'none';
+                    joinRoomForm.style.display = 'block';
+                    allowedRooms.forEach((room) => {
+                        const option = document.createElement('option');
+                        option.value = room;
+                        option.text = room;
+                        selectRoom.appendChild(option);
+                    });
+                    return;
+                }
+
                 if (room) {
                     return (window.location.href = '/join/' + window.location.search);
                     // return (window.location.href = '/join/?room=' + room + '&token=' + token);
@@ -63,20 +87,27 @@ function login() {
             })
             .catch(function (error) {
                 console.error(error);
-                alert('Unauthorized');
+                popup('warning', 'Invalid credentials. Please try again.');
             });
         return;
     }
     if (!username && !password) {
-        alert('Username and Password required');
+        popup('warning', 'Username and Password required');
         return;
     }
     if (!username) {
-        alert('Username required');
+        popup('warning', 'Username required');
         return;
     }
     if (!password) {
-        alert('Password required');
+        popup('warning', 'Password required');
         return;
     }
+}
+
+function join() {
+    //window.location.href = '/join/' + selectRoom.value;
+    const username = filterXSS(document.getElementById('username').value);
+    const roomId = filterXSS(document.getElementById('selectRoom').value);
+    window.location.href = '/join/?room=' + roomId + '&name=' + username + '&token=' + window.sessionStorage.peer_token;
 }

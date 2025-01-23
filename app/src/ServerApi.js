@@ -21,6 +21,12 @@ module.exports = class ServerApi {
         return true;
     }
 
+    getStats(roomList, timestamp = new Date().toISOString()) {
+        const totalUsers = Array.from(roomList.values()).reduce((total, room) => total + room.peers.size, 0);
+        const totalRooms = roomList.size;
+        return { timestamp, totalRooms, totalUsers };
+    }
+
     getMeetings(roomList) {
         const meetings = Array.from(roomList.entries()).map(([id, room]) => {
             const peers = Array.from(room.peers.values()).map(
@@ -62,7 +68,7 @@ module.exports = class ServerApi {
 
     getJoinURL(data) {
         // Get data
-        const { room, roomPassword, name, audio, video, screen, hide, notify, token } = data;
+        const { room, roomPassword, name, audio, video, screen, hide, notify, duration, token } = data;
 
         const roomValue = room || uuidV4();
         const nameValue = name || 'User-' + this.getRandomNumber();
@@ -72,6 +78,7 @@ module.exports = class ServerApi {
         const screenValue = screen || false;
         const hideValue = hide || false;
         const notifyValue = notify || false;
+        const durationValue = duration || 'unlimited';
         const jwtToken = token ? '&token=' + this.getToken(token) : '';
 
         const joinURL =
@@ -86,6 +93,7 @@ module.exports = class ServerApi {
             `&screen=${screenValue}` +
             `&hide=${hideValue}` +
             `&notify=${notifyValue}` +
+            `&duration=${durationValue}` +
             jwtToken;
 
         return joinURL;

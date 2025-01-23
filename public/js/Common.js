@@ -158,7 +158,13 @@ function typeWriter() {
 const roomName = document.getElementById('roomName');
 if (roomName) {
     roomName.value = '';
-    typeWriter();
+    if (window.sessionStorage.roomID) {
+        roomName.value = window.sessionStorage.roomID;
+        window.sessionStorage.roomID = false;
+        joinRoom();
+    } else {
+        typeWriter();
+    }
 }
 
 // ####################################################################
@@ -170,7 +176,7 @@ const lastRoom = document.getElementById('lastRoom');
 const lastRoomName = window.localStorage.lastRoom ? window.localStorage.lastRoom : '';
 if (lastRoomContainer && lastRoom && lastRoomName) {
     lastRoomContainer.style.display = 'inline-flex';
-    lastRoom.setAttribute('href', '/join/' + lastRoomName);
+    lastRoom.setAttribute('href', '/join/?room=' + lastRoomName);
     lastRoom.innerText = lastRoomName;
 }
 
@@ -218,15 +224,16 @@ function joinRoom() {
     const roomValid = isValidRoomName(roomName);
 
     if (!roomName) {
-        alert('Room name empty!\nPlease pick a room name.');
+        popup('warning', 'Room name empty!\nPlease pick a room name.');
         return;
     }
     if (!roomValid) {
-        alert('Invalid Room name!\nPath traversal pattern detected!');
+        popup('warning', 'Invalid Room name!\nPath traversal pattern detected!');
         return;
     }
 
-    window.location.href = '/join/' + roomName;
+    //window.location.href = '/join/' + roomName;
+    window.location.href = '/join/?room=' + roomName;
     window.localStorage.lastRoom = roomName;
 }
 

@@ -28,8 +28,9 @@ class LocalStorage {
             moderator_screen_cant_share: false, // Everyone can't share screen
             moderator_chat_cant_privately: false, // Everyone can't chat privately, only Public chat allowed
             moderator_chat_cant_chatgpt: false, // Everyone can't chat with ChatGPT
+            moderator_media_cant_sharing: false, // Everyone can't share media
             moderator_disconnect_all_on_leave: false, // Disconnect all participants on leave room
-            mic_auto_gain_control: false,
+            mic_auto_gain_control: true,
             mic_echo_cancellations: true,
             mic_noise_suppression: true,
             mic_sample_rate: 0, // 0: 48000 Hz 1: 44100 Hz
@@ -43,6 +44,8 @@ class LocalStorage {
             lobby: false, // default false
             pitch_bar: true, // volume indicator
             sounds: true, // room notify sounds
+            keep_buttons_visible: false, // Keep buttons always visible
+            keyboard_shortcuts: false, // keyboard shortcuts
             host_only_recording: false, // presenter
             rec_prioritize_h264: false, // Prioritize h.264 with AAC or h.264 with Opus codecs over VP8 with Opus or VP9 with Opus codecs
             rec_server: false, // The recording will be stored on the server rather than locally
