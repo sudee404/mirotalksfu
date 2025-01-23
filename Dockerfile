@@ -29,5 +29,8 @@ RUN apt-get purge -y --auto-remove build-essential python3-pip \
 COPY app app
 COPY public public
 
+# Check if config.js exists, if not copy config.template.js to config.js
+RUN if [ ! -f ./app/src/config.js ]; then cp ./app/src/config.template.js ./app/src/config.js; fi
+
 # Set default command to start the application
 CMD ["npm", "start"]
